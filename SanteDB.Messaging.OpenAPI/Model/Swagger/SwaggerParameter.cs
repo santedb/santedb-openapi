@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
 using RestSrvr.Attributes;
+using SanteDB.Core.Interop.Description;
 using SanteDB.Core.Model;
 using SanteDB.Core.Model.Attributes;
 using SanteDB.Messaging.Metadata.Composer;
@@ -93,6 +94,25 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         {
             this.Name = copy.Name;
             this.Location = copy.Location;
+        }
+
+        /// <summary>
+        /// Generate parameter from metadata
+        /// </summary>
+        public SwaggerParameter(OperationParameterDescription description) 
+        {
+            this.Name = description.Name;
+            this.Location = description.Location == OperationParameterLocation.Body ? SwaggerParameterLocation.body :
+                description.Location == OperationParameterLocation.Path ? SwaggerParameterLocation.path : 
+                SwaggerParameterLocation.query;
+
+            if (description.Type != typeof(ResourceDescription))
+                this.Type = m_typeMap[description.Type];
+            else
+            {
+                this.Type = SwaggerSchemaElementType.@object;
+                this.Schema = new SwaggerSchemaDefinition(description.ResourceType);
+            }
         }
 
         /// <summary>

@@ -18,6 +18,8 @@
  */
 using Newtonsoft.Json;
 using RestSrvr.Attributes;
+using SanteDB.Core.Interop.Description;
+using SanteDB.Core.Security;
 using SanteDB.Messaging.Metadata.Composer;
 using SanteDB.Rest.Common.Attributes;
 using System;
@@ -61,6 +63,28 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             this.Responses = copy.Responses.ToDictionary(o => o.Key, o => new SwaggerSchemaElement(o.Value));
             this.Summary = copy.Summary;
             this.Description = copy.Description;
+        }
+
+        /// <summary>
+        /// Create a swagger path description
+        /// </summary>
+        public SwaggerPathDefinition(ServiceOperationDescription description)
+        {
+
+            this.Consumes = new List<string>(description.Accepts);
+            this.Produces = new List<string>(description.Produces);
+            this.Tags = new List<string>(description.Tags);
+            this.Parameters = description.Parameters.Select(o => new SwaggerParameter(o)).ToList();
+            this.Responses = description.Responses.ToDictionary(o => (int)o.Key, o => new SwaggerSchemaElement(o.Value));
+            if (description.RequiresAuth)
+            {
+                this.Security = new List<SwaggerPathSecurity>() {
+                    new SwaggerPathSecurity()
+                        {
+                            { "oauth_user", new List<string>() { PermissionPolicyIdentifiers.Login } }
+                        }
+                };
+            }
         }
 
         /// <summary>

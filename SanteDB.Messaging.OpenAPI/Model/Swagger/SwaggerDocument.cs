@@ -60,6 +60,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             this.Consumes = new List<string>();
         }
 
+
         /// <summary>
         /// Create new swagger document
         /// </summary>
@@ -82,11 +83,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 listen.Scheme
             };
 
-            // Construct the paths
-            var operations = service.Contracts.SelectMany(c => c.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                    .Select(o => new { Rest = o.GetCustomAttribute<RestInvokeAttribute>(), ContractMethod = o, BehaviorMethod = service.Behavior.Type.GetMethod(o.Name, o.GetParameters().Select(p => p.ParameterType).ToArray()) }))
-                    .Where(o => o.Rest != null);
-
+            
             // What this option produces
             this.Produces.AddRange(service.Contracts.SelectMany(c => c.Type.GetCustomAttributes<ServiceProducesAttribute>().Select(o => o.MimeType)));
             this.Consumes.AddRange(service.Contracts.SelectMany(c => c.Type.GetCustomAttributes<ServiceConsumesAttribute>().Select(o => o.MimeType)));
@@ -116,9 +113,55 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
 
             }
 
+           
+            // Provides its own behavior configuration
+            if (typeof(IServiceBehaviorMetadataProvider).IsAssignableFrom(service.Behavior.Type))
+            {
+                var smp = Activator.CreateInstance(service.Behavior.Type) as IServiceBehaviorMetadataProvider;
+                this.InitializeViaMetadata(smp);
+            }
+            else 
+                this.InitializeViaReflection(service);
+            
+
+            // Now we want to add a definition for all references
+            // This LINQ expression allows for scanning of any properties where there is currently no definition for a particular type
+            var missingDefns = this.Paths.AsParallel().SelectMany(
+                    o => o.Value.SelectMany(p => p.Value?.Parameters.Select(r => r.Schema))
+                        .Union(o.Value.SelectMany(p => p.Value?.Responses?.Values?.Select(r => r.Schema))))
+                .Union(this.Definitions.AsParallel().Where(o => o.Value.Properties != null).SelectMany(o => o.Value.Properties.Select(p => p.Value.Items ?? p.Value.Schema)))
+                .Union(this.Definitions.AsParallel().Where(o => o.Value.AllOf != null).SelectMany(o => o.Value.AllOf))
+                .Select(s => s?.NetType)
+                .Where(o => o != null && !this.Definitions.ContainsKey(MetadataComposerUtil.CreateSchemaReference(o)))
+                .Distinct();
+            while (missingDefns.Count() > 0)
+                foreach (var def in missingDefns.AsParallel().ToList())
+                {
+                    var name = MetadataComposerUtil.CreateSchemaReference(def);
+                    if (!this.Definitions.ContainsKey(name))
+                        this.Definitions.Add(name, new SwaggerSchemaDefinition(def));
+                }
+
+            // Create the definitions
+
+        }
+
+        /// <summary>
+        /// Initialize data via a metadata provider
+        /// </summary>
+        private void InitializeViaMetadata(IServiceBehaviorMetadataProvider smp)
+        {
+            this.Paths = smp.Description.Operations.GroupBy(o=>o.Path).ToDictionary(o => o.Key, o => new SwaggerPath(o));
+            this.Tags = this.Paths.SelectMany(o => o.Value.Values).SelectMany(o=>o.Tags).Distinct().Select(o=>new SwaggerTag(o, null)).ToList();
+        }
+
+        /// <summary>
+        /// Initialize this class via reflection
+        /// </summary>
+        private void InitializeViaReflection(ServiceEndpointOptions service)
+        {
             // Is there an options() method that can be called?
             List<KeyValuePair<String, Type>> resourceTypes = null;
-
             var optionsMethod = service.Behavior.Type.GetRuntimeMethod("Options", Type.EmptyTypes);
             ServiceOptions serviceOptions = null;
             if (optionsMethod != null)
@@ -133,6 +176,12 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 // Resource types
                 resourceTypes = service.Contracts.SelectMany(c => c.Type.GetCustomAttributes<ServiceKnownResourceAttribute>().Select(o => new KeyValuePair<String, Type>(o.Type.GetCustomAttribute<XmlRootAttribute>()?.ElementName, o.Type)).Where(o => !String.IsNullOrEmpty(o.Key))).ToList();
             }
+
+
+            // Construct the paths
+            var operations = service.Contracts.SelectMany(c => c.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .Select(o => new { Rest = o.GetCustomAttribute<RestInvokeAttribute>(), ContractMethod = o, BehaviorMethod = service.Behavior.Type.GetMethod(o.Name, o.GetParameters().Select(p => p.ParameterType).ToArray()) }))
+                    .Where(o => o.Rest != null);
 
             // Create tags
             if (operations.Any(o => o.Rest.UriTemplate.Contains("{resourceType}")))
@@ -171,6 +220,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 }
 
                 if (operation.Key.Contains("{resourceType}"))
+                {
                     foreach (var resource in resourceTypes)
                     {
                         var resourcePath = operation.Key.Replace("{resourceType}", resource.Key);
@@ -296,32 +346,12 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                             subPath.Remove(nv);
                         this.Paths.Add(resourcePath, subPath);
                     }
+                }
                 else
                 {
                     this.Paths.Add(operation.Key, path);
                 }
             }
-
-            // Now we want to add a definition for all references
-            // This LINQ expression allows for scanning of any properties where there is currently no definition for a particular type
-            var missingDefns = this.Paths.AsParallel().SelectMany(
-                    o => o.Value.SelectMany(p => p.Value?.Parameters.Select(r => r.Schema))
-                        .Union(o.Value.SelectMany(p => p.Value?.Responses?.Values?.Select(r => r.Schema))))
-                .Union(this.Definitions.AsParallel().Where(o => o.Value.Properties != null).SelectMany(o => o.Value.Properties.Select(p => p.Value.Items ?? p.Value.Schema)))
-                .Union(this.Definitions.AsParallel().Where(o => o.Value.AllOf != null).SelectMany(o => o.Value.AllOf))
-                .Select(s => s?.NetType)
-                .Where(o => o != null && !this.Definitions.ContainsKey(MetadataComposerUtil.CreateSchemaReference(o)))
-                .Distinct();
-            while (missingDefns.Count() > 0)
-                foreach (var def in missingDefns.AsParallel().ToList())
-                {
-                    var name = MetadataComposerUtil.CreateSchemaReference(def);
-                    if (!this.Definitions.ContainsKey(name))
-                        this.Definitions.Add(name, new SwaggerSchemaDefinition(def));
-                }
-
-            // Create the definitions
-
         }
 
         /// <summary>

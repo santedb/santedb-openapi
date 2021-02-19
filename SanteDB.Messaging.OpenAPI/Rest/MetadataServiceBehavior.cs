@@ -68,7 +68,7 @@ namespace SanteDB.Messaging.Metadata.Rest
             catch (Exception e)
             {
                 this.m_traceSource.TraceEvent(EventLevel.Error,  "Could not get documentation due to exception: {0}", e);
-                throw e;
+                throw new InvalidOperationException("Error constructing OpenAPI swagger.json file", e);
             }
         }
          

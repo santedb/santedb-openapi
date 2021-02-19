@@ -17,6 +17,7 @@
  * Date: 2019-11-27
  */
 using Newtonsoft.Json;
+using SanteDB.Core.Interop.Description;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,6 +47,17 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         public SwaggerPath(IDictionary<String, SwaggerPathDefinition> copy) : base(copy.ToDictionary(o=>o.Key, o=>new SwaggerPathDefinition(o.Value)))
         {
 
+        }
+
+        /// <summary>
+        /// Create a swagger path via a description
+        /// </summary>
+        public SwaggerPath(IEnumerable<ServiceOperationDescription> description)
+        {
+            foreach (var itm in description)
+            {
+                this.Add(itm.Verb.ToLower(), new SwaggerPathDefinition(itm));
+            }
         }
     }
 }

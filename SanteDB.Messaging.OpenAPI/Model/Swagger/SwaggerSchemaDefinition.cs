@@ -24,6 +24,7 @@ using System.Linq;
 using SanteDB.Messaging.Metadata.Composer;
 using System.Reflection;
 using SanteDB.Core.Model;
+using SanteDB.Core.Interop.Description;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
 {
@@ -76,6 +77,17 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             var xmlType = schemaType.GetCustomAttribute<XmlTypeAttribute>();
             if (xmlType != null)
                 this.Xml = new SwaggerXmlInfo(xmlType);
+        }
+
+        /// <summary>
+        /// Create a resource schema definition from metadata
+        /// </summary>
+        public SwaggerSchemaDefinition(ResourceDescription resourceType)
+        {
+
+            this.Properties = resourceType.Properties.ToDictionary(o => o.Name, o => new SwaggerSchemaElement(o));
+            this.Description = resourceType.Description;
+
         }
 
         /// <summary>
