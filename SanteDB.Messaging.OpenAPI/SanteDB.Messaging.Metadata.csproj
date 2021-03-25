@@ -1,6 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(VersionNumber)' == ''">
+    <VersionNumber>2.1.0-debug</VersionNumber>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageId>SanteDB.Messaging.Metadata</PackageId>
+    <Title>SanteDB OPENAPI Metadata Exchange</Title>
+    <Version>$(VersionNumber)</Version>
+    <Description>Allows SanteDB iCDR to produce OpenAPI documentation.</Description>
+    <Authors>SanteSuite Contributors</Authors>
+    <PackageTags>SanteDB</PackageTags>
+    <RepositoryUrl>https://github.com/santedb/santedb-openapi</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <IncludeSymbols>true</IncludeSymbols>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+	    <Product>SanteDB</Product>
+    <Copyright>Copyright (C) 2015-2021 SanteSuite Contributors (See: NOTICES)</Copyright>
+    <Company>SanteSuite Contributors</Company>
+    <PackageIconUrl>http://santesuite.org/assets/img/logo.png</PackageIconUrl>
+    <PackageProjectUrl>http://santesuite.org</PackageProjectUrl>
+  </PropertyGroup>   
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -33,7 +57,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\bin\Release\SanteDB.Messaging.Metadata.xml</DocumentationFile>
   </PropertyGroup>
-  <ItemGroup>
+  <!--<ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -65,7 +89,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rest\IMetadataServiceContract.cs" />
     <Compile Include="Rest\MetadataServiceBehavior.cs" />
-  </ItemGroup>
+  </ItemGroup>-->
   <Choose>
     <When Condition="$(SolutionName.Contains('-ext'))">
       <ItemGroup>
@@ -93,11 +117,11 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <PackageReference Include="RestSrvr" Version="2.1.3.0" />
-        <PackageReference Include="SanteDB.Core.Api" Version="2.1.3.0" />
-        <PackageReference Include="SanteDB.Core.Model" Version="2.1.3.0" />
-        <PackageReference Include="SanteDB.Rest.Common" Version="2.1.3.0" />
-        <PackageReference Include="SanteDB.Docker.Core" Version="2.1.3.0" />
+        <PackageReference Include="RestSrvr" Version="$(VersionNumber)" />
+        <PackageReference Include="SanteDB.Core.Api" Version="$(VersionNumber)" />
+        <PackageReference Include="SanteDB.Core.Model" Version="$(VersionNumber)" />
+        <PackageReference Include="SanteDB.Rest.Common" Version="$(VersionNumber)" />
+        <PackageReference Include="SanteDB.Docker.Core" Version="$(VersionNumber)" />
       </ItemGroup>
     </Otherwise>
   </Choose>
