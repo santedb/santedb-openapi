@@ -15,7 +15,7 @@ namespace SanteDB.Messaging.Metadata.Docker
     /// <summary>
     /// OpenAPI Feature
     /// </summary>
-    public class OpenApiFeature : IDockerFeature
+    public class OpenApiDockerFeature : IDockerFeature
     {
 
         /// <summary>

@@ -48,7 +48,7 @@
     <Compile Include="Composer\IMetadataComposer.cs" />
     <Compile Include="Composer\SwaggerMetadataComposer.cs" />
     <Compile Include="Configuration\MetadataConfigurationSection.cs" />
-    <Compile Include="Docker\OpenApiFeature.cs" />
+    <Compile Include="Docker\OpenApiDockerFeature.cs" />
     <Compile Include="Model\Swagger\SwaggerPath.cs" />
     <Compile Include="Model\Swagger\SwaggerSchemaDefinition.cs" />
     <Compile Include="Model\Swagger\SwaggerDocument.cs" />
@@ -85,7 +85,10 @@
           <Project>{786BD0EE-1806-4158-BA45-80249AC6DFE7}</Project>
           <Name>SanteDB.Rest.Common</Name>
         </ProjectReference>
-        <ProjectReference Include="..\..\santedb-docker\SanteDB.Docker.Core\SanteDB.Docker.Core.csproj" />
+        <ProjectReference Include="..\..\santedb-docker\SanteDB.Docker.Core\SanteDB.Docker.Core.csproj">
+          <Project>{284CE885-78E0-48EA-A2E4-6957AD66EAB5}</Project>
+          <Name>SanteDB.Docker.Core</Name>
+        </ProjectReference>
       </ItemGroup>
     </When>
     <Otherwise>
