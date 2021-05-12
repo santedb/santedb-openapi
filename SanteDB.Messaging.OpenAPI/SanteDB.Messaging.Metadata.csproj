@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup Condition="'$(VersionNumber)' == ''">
     <VersionNumber>2.1.0-debug</VersionNumber>
@@ -151,9 +151,6 @@
   <ItemGroup>
     <None Include="..\SanteDB.licenseheader">
       <Link>SanteDB.licenseheader</Link>
-    </None>
-    <None Include="SanteDB.Messaging.Metadata.nuspec">
-      <SubType>Designer</SubType>
     </None>
   </ItemGroup>
 </Project>
