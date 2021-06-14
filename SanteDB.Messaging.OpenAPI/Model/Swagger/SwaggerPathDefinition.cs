@@ -93,8 +93,8 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         public SwaggerPathDefinition(MethodInfo behaviorMethod, MethodInfo contractMethod) : this()
         {
             var operationAtt = contractMethod.GetCustomAttribute<RestInvokeAttribute>();
-            this.Summary = MetadataComposerUtil.GetElementDocumentation(behaviorMethod, MetaDataElementType.Summary) ?? MetadataComposerUtil.GetElementDocumentation(contractMethod, MetaDataElementType.Summary) ?? behaviorMethod.Name;
-            this.Description = MetadataComposerUtil.GetElementDocumentation(behaviorMethod, MetaDataElementType.Remarks) ?? MetadataComposerUtil.GetElementDocumentation(contractMethod, MetaDataElementType.Remarks);
+            this.Summary = MetadataComposerUtil.GetElementDocumentation(contractMethod, MetaDataElementType.Summary) ?? MetadataComposerUtil.GetElementDocumentation(behaviorMethod, MetaDataElementType.Summary) ?? behaviorMethod.Name;
+            this.Description = MetadataComposerUtil.GetElementDocumentation(contractMethod, MetaDataElementType.Remarks) ?? MetadataComposerUtil.GetElementDocumentation(behaviorMethod, MetaDataElementType.Remarks);
             this.Produces.AddRange(contractMethod.GetCustomAttributes<ServiceProducesAttribute>().Select(o => o.MimeType));
             this.Consumes.AddRange(contractMethod.GetCustomAttributes<ServiceConsumesAttribute>().Select(o => o.MimeType));
 
