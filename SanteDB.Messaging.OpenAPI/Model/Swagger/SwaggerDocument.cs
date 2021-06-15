@@ -113,7 +113,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
 
             }
 
-           
             // Provides its own behavior configuration
             if (typeof(IServiceBehaviorMetadataProvider).IsAssignableFrom(service.Behavior.Type))
             {
@@ -122,7 +121,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             }
             else 
                 this.InitializeViaReflection(service);
-            
 
             // Now we want to add a definition for all references
             // This LINQ expression allows for scanning of any properties where there is currently no definition for a particular type
@@ -143,7 +141,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 }
 
             // Create the definitions
-
+            this.Tags = this.Tags.OrderBy(o => o.Name).ToList();
         }
 
         /// <summary>
@@ -232,14 +230,16 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
 
                         // Get the resource options for this resource
                         ServiceResourceOptions resourceOptions = serviceOptions?.Resources.FirstOrDefault(o => o.ResourceName == resource.Key);
-
+                        
                         var subPath = new SwaggerPath(path);
+                        
                         foreach (var v in subPath)
                         {
 
                             // Check that this resource is supported
                             var resourceCaps = resourceOptions?.Capabilities.FirstOrDefault(c => c.Capability == MetadataComposerUtil.VerbToCapability(v.Key, v.Value.Parameters.Count));
-                            if (resourceOptions != null && resourceCaps == null)
+                            if (resourceOptions != null && resourceCaps == null && 
+                                v.Key != "head" && v.Key != "options" && v.Key != "search")
                             {
                                 unsupportedVerbs.Add(v.Key);
                                 continue;
@@ -320,7 +320,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                     }
                                 });
 
-
                             }
 
                             // Replace the response if necessary
@@ -344,7 +343,54 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                         // Add the resource path?
                         foreach (var nv in unsupportedVerbs)
                             subPath.Remove(nv);
-                        this.Paths.Add(resourcePath, subPath);
+
+                        // Child resources? we want to multiply them if so
+                        if (resourcePath.Contains("{childResourceType}") && resourceOptions.ChildResources.Count > 0)
+                        {
+                            foreach (var sp in subPath) 
+                                sp.Value.Parameters.RemoveAll(o => o.Name == "childResourceType");
+
+
+                            // Correct for child resources - rewriting the schema and opts
+                            foreach (var cp in resourceOptions.ChildResources)
+                            {
+                                var newPath = new SwaggerPath();
+                                foreach (var v in subPath)
+                                {
+                                    var childCaps = cp.Capabilities.FirstOrDefault(c => c.Capability == MetadataComposerUtil.VerbToCapability(v.Key, v.Value.Parameters.Count));
+                                    if (childCaps != null)
+                                        newPath.Add(v.Key, v.Value);
+                                }
+
+                                this.Paths.Add(resourcePath.Replace("{childResourceType}", cp.ResourceName), newPath);
+                                foreach (var sp in newPath)
+                                {
+                                    // Replace the response if necessary
+                                    var resourceSchemaRef = new SwaggerSchemaDefinition()
+                                    {
+                                        NetType = cp.ResourceType,
+                                        Reference = $"#/definitions/{MetadataComposerUtil.CreateSchemaReference(cp.ResourceType)}"
+                                    };
+                                    SwaggerSchemaElement schema = null;
+                                    if (sp.Value.Responses.TryGetValue(200, out schema))
+                                    {
+                                        schema.Schema = resourceSchemaRef;
+                                        
+                                    }
+                                    if (sp.Value.Responses.TryGetValue(201, out schema))
+                                        schema.Schema = resourceSchemaRef;
+
+                                    // Replace the body if necessary
+                                    var bodyParm = sp.Value.Parameters.FirstOrDefault(o => o.Location == SwaggerParameterLocation.body && o.Schema?.NetType?.IsAssignableFrom(resource.Value) == true);
+                                    if (bodyParm != null)
+                                        bodyParm.Schema = resourceSchemaRef;
+                                }
+                            }
+                        }
+                        else if(!resourcePath.Contains("{childResourceType}"))
+                        {
+                            this.Paths.Add(resourcePath, subPath);
+                        }
                     }
                 }
                 else
