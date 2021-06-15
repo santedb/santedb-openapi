@@ -67,27 +67,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Composer\MetadataComposerUtil.cs" />
-    <Compile Include="Composer\IMetadataComposer.cs" />
-    <Compile Include="Composer\SwaggerMetadataComposer.cs" />
-    <Compile Include="Configuration\MetadataConfigurationSection.cs" />
-    <Compile Include="Model\Swagger\SwaggerPath.cs" />
-    <Compile Include="Model\Swagger\SwaggerSchemaDefinition.cs" />
-    <Compile Include="Model\Swagger\SwaggerDocument.cs" />
-    <Compile Include="Model\Swagger\SwaggerParameter.cs" />
-    <Compile Include="Model\Swagger\SwaggerPathDefinition.cs" />
-    <Compile Include="Model\Swagger\SwaggerPathSecurity.cs" />
-    <Compile Include="Model\Swagger\SwaggerSchemaElement.cs" />
-    <Compile Include="Model\Swagger\SwaggerSecurityDefinition.cs" />
-    <Compile Include="Model\Swagger\SwaggerServiceInfo.cs" />
-    <Compile Include="Model\Swagger\SwaggerTag.cs" />
-    <Compile Include="MetadataConstants.cs" />
-    <Compile Include="MetadataMessageHandler.cs" />
-    <Compile Include="Model\Swagger\SwaggerXmlInfo.cs" />
-    <Compile Include="Rest\IMetadataServiceContract.cs" />
-    <Compile Include="Rest\MetadataServiceBehavior.cs" />
-  </ItemGroup>
+ 
   <Choose>
     <When Condition="$(SolutionName.Contains('-ext'))">
       <ItemGroup>
@@ -107,14 +87,16 @@
           <Project>{786BD0EE-1806-4158-BA45-80249AC6DFE7}</Project>
           <Name>SanteDB.Rest.Common</Name>
         </ProjectReference>
+        <ProjectReference Include="..\..\santedb-docker\SanteDB.Docker.Core\SanteDB.Docker.Core.csproj"/>
       </ItemGroup>
     </When>
     <Otherwise>
       <ItemGroup>
-        <PackageReference Include="RestSrvr" Version="2.1.2.0" />
-        <PackageReference Include="SanteDB.Core.Api" Version="2.1.2.0" />
-        <PackageReference Include="SanteDB.Core.Model" Version="2.1.2.0" />
-        <PackageReference Include="SanteDB.Rest.Common" Version="2.1.2.0" />
+        <PackageReference Include="RestSrvr" Version="$(VersionNumber)" />
+        <PackageReference Include="SanteDB.Core.Api" Version="$(VersionNumber)" />
+        <PackageReference Include="SanteDB.Core.Model" Version="$(VersionNumber)" />
+        <PackageReference Include="SanteDB.Docker.Core" Version="$(VersionNumber)" />
+        <PackageReference Include="SanteDB.Rest.Common" Version="$(VersionNumber)" />
       </ItemGroup>
     </Otherwise>
   </Choose>
