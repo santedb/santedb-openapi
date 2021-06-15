@@ -98,7 +98,7 @@
         <PackageReference Include="SanteDB.Docker.Core" Version="$(VersionNumber)" />
         <PackageReference Include="SanteDB.Rest.Common" Version="$(VersionNumber)" />
       </ItemGroup>
-    </Otherwise>
+    </Otherwise> 
   </Choose>
   <ItemGroup>
     <EmbeddedResource Include="Configuration\Default.xml" />
