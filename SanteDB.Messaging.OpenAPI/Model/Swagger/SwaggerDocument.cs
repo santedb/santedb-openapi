@@ -345,12 +345,11 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                             subPath.Remove(nv);
 
                         // Child resources? we want to multiply them if so
-                        if (resourcePath.Contains("{childResourceType}") && resourceOptions.ChildResources.Count > 0)
+                        if ((resourcePath.Contains("{childResourceType}") || resourcePath.Contains("{operationName}")) && resourceOptions.ChildResources.Count > 0)
                         {
                             foreach (var sp in subPath) 
-                                sp.Value.Parameters.RemoveAll(o => o.Name == "childResourceType");
-
-
+                                sp.Value.Parameters.RemoveAll(o => o.Name == "childResourceType" || o.Name == "operationName");
+                            
                             // Correct for child resources - rewriting the schema and opts
                             foreach (var cp in resourceOptions.ChildResources)
                             {
@@ -362,7 +361,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                         newPath.Add(v.Key, v.Value);
                                 }
 
-                                this.Paths.Add(resourcePath.Replace("{childResourceType}", cp.ResourceName), newPath);
+                                this.Paths.Add(resourcePath.Replace("{childResourceType}", cp.ResourceName).Replace("{operationName}",cp.ResourceName), newPath);
                                 foreach (var sp in newPath)
                                 {
                                     // Replace the response if necessary
