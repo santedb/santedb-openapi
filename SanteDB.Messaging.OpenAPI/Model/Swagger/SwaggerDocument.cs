@@ -232,7 +232,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                         ServiceResourceOptions resourceOptions = serviceOptions?.Resources.FirstOrDefault(o => o.ResourceName == resource.Key);
                         
                         var subPath = new SwaggerPath(path);
-                        
                         foreach (var v in subPath)
                         {
 
@@ -262,13 +261,14 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                             }
 
                             // Query parameters?
-                            if ((v.Key == "get" || v.Key == "head") && v.Value.Parameters.Count == 0)
+                            if ((v.Key == "get" || v.Key == "head") )
                             {
                                 // Build query parameters
-                                v.Value.Parameters = resource.Value.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                                v.Value.Parameters.AddRange(resource.Value.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                                     .Where(o => o.GetCustomAttributes<XmlElementAttribute>().Any() || o.GetCustomAttribute<QueryParameterAttribute>() != null)
                                     .Select(o => new SwaggerParameter(o))
-                                    .ToList();
+                                  );
+
                                 v.Value.Parameters.AddRange(new SwaggerParameter[]
                                 {
                                     new SwaggerParameter()

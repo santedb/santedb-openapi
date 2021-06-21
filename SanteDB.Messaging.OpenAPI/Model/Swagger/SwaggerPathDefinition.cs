@@ -19,6 +19,7 @@
 using Newtonsoft.Json;
 using RestSrvr.Attributes;
 using SanteDB.Core.Interop.Description;
+using SanteDB.Core.Model;
 using SanteDB.Core.Security;
 using SanteDB.Messaging.Metadata.Composer;
 using SanteDB.Rest.Common.Attributes;
@@ -102,9 +103,9 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             this.Obsolete = (behaviorMethod?.GetCustomAttribute<ObsoleteAttribute>() != null || contractMethod?.GetCustomAttribute<ObsoleteAttribute>() != null ||
                 behaviorMethod.DeclaringType.GetCustomAttribute<ObsoleteAttribute>() != null || contractMethod.DeclaringType.GetCustomAttribute<ObsoleteAttribute>() != null);
 
-            var parms = behaviorMethod.GetParameters();
+            var parms = contractMethod.GetParameters();
             if (parms.Length > 0)
-                this.Parameters = parms.Select(o => new SwaggerParameter(behaviorMethod, o, operationAtt)).ToList();
+                this.Parameters = parms.Select(o => new SwaggerParameter(contractMethod, o, operationAtt)).ToList();
 
             var demands = behaviorMethod.GetCustomAttributes<DemandAttribute>();
             if (demands.Count() > 0)
@@ -159,6 +160,24 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                         Reference = $"#/definitions/{MetadataComposerUtil.CreateSchemaReference(flt.FaultType)}"
                     }
                 });
+
+            // Service Query PArameters
+            foreach (var prm in contractMethod.GetCustomAttributes<UrlParameterAttribute>().Union(behaviorMethod.GetCustomAttributes<UrlParameterAttribute>()))
+            {
+                this.Parameters.Add(new SwaggerParameter()
+                {
+                    Description = prm.Description,
+                    Name = prm.Name,
+                    Location = SwaggerParameterLocation.query,
+                    Type = prm.Multiple ? SwaggerSchemaElementType.array :
+                        prm.Type == typeof(String) || prm.Type.StripNullable() == typeof(Guid) ? SwaggerSchemaElementType.@string :
+                        prm.Type.StripNullable() == typeof(Int32) ? SwaggerSchemaElementType.number :
+                        prm.Type.StripNullable() == typeof(DateTime) ? SwaggerSchemaElementType.date :
+                        prm.Type.StripNullable() == typeof(bool) ? SwaggerSchemaElementType.boolean :
+                        SwaggerSchemaElementType.@object,
+                    Required = prm.Required
+                }); 
+            }
         }
 
 

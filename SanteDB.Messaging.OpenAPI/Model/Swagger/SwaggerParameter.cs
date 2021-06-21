@@ -70,7 +70,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         public SwaggerParameter(PropertyInfo queryFilter) 
         {
 
-            this.Name = queryFilter.GetSerializationName() ?? queryFilter.GetCustomAttribute<QueryParameterAttribute>()?.ParameterName;
+            this.Name = queryFilter.GetSerializationName() ?? queryFilter.GetCustomAttribute<Core.Model.Attributes.QueryParameterAttribute>()?.ParameterName;
             this.Description = MetadataComposerUtil.GetElementDocumentation(queryFilter);
             this.Location = SwaggerParameterLocation.query;
             
