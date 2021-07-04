@@ -31,6 +31,20 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
 {
 
     /// <summary>
+    /// Schema element format
+    /// </summary>
+    public enum SwaggerSchemaElementFormat
+    {
+        uuid,
+        date,
+        @float,
+        @double,
+        @int32,
+        @int64,
+        @byte
+    }
+
+    /// <summary>
     /// Represents the swagger parameter type
     /// </summary>
     public enum SwaggerSchemaElementType
@@ -47,14 +61,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         /// Parameter is a boolean
         /// </summary>
         boolean,
-        /// <summary>
-        /// Parameter is a date
-        /// </summary>
-        date,
-        /// <summary>
-        /// Data is a timespan
-        /// </summary>
-        timespan,
         /// <summary>
         /// Data is an array
         /// </summary>
@@ -85,12 +91,27 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             {  typeof(short), SwaggerSchemaElementType.number },
             {  typeof(byte), SwaggerSchemaElementType.number },
             {  typeof(decimal), SwaggerSchemaElementType.number },
-            {  typeof(DateTime), SwaggerSchemaElementType.date },
-            {  typeof(DateTimeOffset), SwaggerSchemaElementType.date },
-            {  typeof(TimeSpan), SwaggerSchemaElementType.timespan },
+            {  typeof(DateTime), SwaggerSchemaElementType.@string},
+            {  typeof(DateTimeOffset), SwaggerSchemaElementType.@string},
+            {  typeof(Guid), SwaggerSchemaElementType.@string },
             {  typeof(bool), SwaggerSchemaElementType.boolean },
-            {  typeof(String), SwaggerSchemaElementType.@string },
-            {  typeof(Guid), SwaggerSchemaElementType.@string }
+            {  typeof(String), SwaggerSchemaElementType.@string }
+        };
+
+        internal static readonly Dictionary<Type, SwaggerSchemaElementFormat?> m_formatMap = new Dictionary<Type, SwaggerSchemaElementFormat?>()
+        {
+            {  typeof(int), SwaggerSchemaElementFormat.int32 },
+            {  typeof(float), SwaggerSchemaElementFormat.@float },
+            {  typeof(double), SwaggerSchemaElementFormat.@double },
+            {  typeof(long), SwaggerSchemaElementFormat.int64 },
+            {  typeof(short), null },
+            {  typeof(byte), SwaggerSchemaElementFormat.@byte },
+            {  typeof(decimal), SwaggerSchemaElementFormat.@double },
+            {  typeof(DateTime), SwaggerSchemaElementFormat.date },
+            {  typeof(DateTimeOffset), SwaggerSchemaElementFormat.date },
+            {  typeof(Guid), SwaggerSchemaElementFormat.uuid },
+            {  typeof(bool), null },
+            {  typeof(String), null }
         };
 
         /// <summary>
@@ -128,19 +149,24 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             if (property.PropertyType.StripNullable().IsEnum)
             {
                 this.Enum = property.PropertyType.StripNullable().GetFields().Select(f => f.GetCustomAttributes<XmlEnumAttribute>().FirstOrDefault()?.Name).Where(o => !string.IsNullOrEmpty(o)).ToList();
+                if(this.Enum.Count == 0)
+                {
+                    this.Enum = property.PropertyType.StripNullable().GetFields().Select(f => f.Name).Where(o=>o != "value__").ToList();
+
+                }
                 this.Type = SwaggerSchemaElementType.@string;
             }
-            else if(typeof(IList).IsAssignableFrom(property.PropertyType) || property.PropertyType.IsArray) // List or array {
+            else if (typeof(IList).IsAssignableFrom(property.PropertyType) || property.PropertyType.IsArray) // List or array {
             {
                 this.Type = SwaggerSchemaElementType.array;
 
                 Type elementType = null;
                 if (property.PropertyType.IsArray)
                     elementType = property.PropertyType.GetElementType();
-                else if(property.PropertyType.IsConstructedGenericType)
+                else if (property.PropertyType.IsConstructedGenericType)
                     elementType = property.PropertyType.GetGenericArguments()[0];
 
-                if(elementType == null || !m_typeMap.TryGetValue(elementType.StripNullable(), out type)) 
+                if (elementType == null || !m_typeMap.TryGetValue(elementType.StripNullable(), out type))
                     this.Items = new SwaggerSchemaDefinition()
                     {
                         Type = SwaggerSchemaElementType.@object,
@@ -150,7 +176,8 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 else
                     this.Items = new SwaggerSchemaDefinition()
                     {
-                        Type = type
+                        Type = type,
+                        Format = m_formatMap[elementType.StripNullable()]
                     };
             }
             else if (!m_typeMap.TryGetValue(property.PropertyType.StripNullable(), out type))
@@ -162,8 +189,10 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 };
             }
             else
+            {
                 this.Type = type;
-
+                this.Format = m_formatMap[property.PropertyType.StripNullable()];
+            }
             // XML info
             var xmlElement = property.GetCustomAttributes<XmlElementAttribute>().FirstOrDefault();
             var xmlAttribute = property.GetCustomAttribute<XmlAttributeAttribute>();
@@ -217,10 +246,17 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         public SwaggerSchemaElementType? Type { get; set; }
 
         /// <summary>
+        /// Gets or sets the type of the element
+        /// </summary>
+        [JsonProperty("format")]
+        public SwaggerSchemaElementFormat? Format { get; set; }
+
+
+        /// <summary>
         /// Gets whether the parameter is required
         /// </summary>
         [JsonProperty("required")]
-        public bool Required { get; set; }
+        public bool? Required { get; set; }
 
         /// <summary>
         /// Gets or sets the schema of the element

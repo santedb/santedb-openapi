@@ -164,19 +164,17 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             // Service Query PArameters
             foreach (var prm in contractMethod.GetCustomAttributes<UrlParameterAttribute>().Union(behaviorMethod.GetCustomAttributes<UrlParameterAttribute>()))
             {
-                this.Parameters.Add(new SwaggerParameter()
+                var sp = new SwaggerParameter()
                 {
                     Description = prm.Description,
                     Name = prm.Name,
                     Location = SwaggerParameterLocation.query,
-                    Type = prm.Multiple ? SwaggerSchemaElementType.array :
-                        prm.Type == typeof(String) || prm.Type.StripNullable() == typeof(Guid) ? SwaggerSchemaElementType.@string :
-                        prm.Type.StripNullable() == typeof(Int32) ? SwaggerSchemaElementType.number :
-                        prm.Type.StripNullable() == typeof(DateTime) ? SwaggerSchemaElementType.date :
-                        prm.Type.StripNullable() == typeof(bool) ? SwaggerSchemaElementType.boolean :
-                        SwaggerSchemaElementType.@object,
+                    Type = SwaggerSchemaElement.m_typeMap[prm.Type.StripNullable()],
+                    Format =  SwaggerSchemaElement.m_formatMap[prm.Type.StripNullable()],
                     Required = prm.Required
-                }); 
+                };
+                
+                this.Parameters.Add(sp); 
             }
         }
 

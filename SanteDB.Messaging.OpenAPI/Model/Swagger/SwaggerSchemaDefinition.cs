@@ -40,7 +40,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         /// </summary>
         public SwaggerSchemaDefinition()
         {
-            this.Properties = new Dictionary<string, SwaggerSchemaElement>();
+            //this.Properties = new Dictionary<string, SwaggerSchemaElement>();
         }
 
         /// <summary>
@@ -49,6 +49,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         public SwaggerSchemaDefinition(SwaggerSchemaDefinition copy) : this()
         {
             this.Type = copy.Type;
+            this.Format = copy.Format;
             this.Reference = copy.Reference;
             this.Description = copy.Description;
             if (copy.Properties != null)
@@ -85,7 +86,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         public SwaggerSchemaDefinition(ResourceDescription resourceType)
         {
 
-            this.Properties = resourceType.Properties.ToDictionary(o => o.Name, o => new SwaggerSchemaElement(o));
+            this.Properties = resourceType.Properties?.ToDictionary(o => o.Name, o => new SwaggerSchemaElement(o));
             this.Description = resourceType.Description;
 
         }
@@ -130,6 +131,12 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         /// Gets the type
         /// </summary>
         [JsonProperty("type")]
-        public SwaggerSchemaElementType Type { get; internal set; }
+        public SwaggerSchemaElementType? Type { get; internal set; }
+
+        /// <summary>
+        /// Gets the type
+        /// </summary>
+        [JsonProperty("format")]
+        public SwaggerSchemaElementFormat? Format { get; internal set; }
     }
 }
