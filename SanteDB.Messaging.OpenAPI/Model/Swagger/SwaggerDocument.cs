@@ -83,7 +83,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 listen.Scheme
             };
 
-            
+
             // What this option produces
             this.Produces.AddRange(service.Contracts.SelectMany(c => c.Type.GetCustomAttributes<ServiceProducesAttribute>().Select(o => o.MimeType)));
             this.Consumes.AddRange(service.Contracts.SelectMany(c => c.Type.GetCustomAttributes<ServiceConsumesAttribute>().Select(o => o.MimeType)));
@@ -92,24 +92,24 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             var serviceCaps = MetadataComposerUtil.GetServiceCapabilities(service.ServiceType);
             if (serviceCaps.HasFlag(ServiceEndpointCapabilities.BearerAuth))
             {
-                var bauth = AuthenticationContext.Current;
-                var tokenUrl = new Uri(MetadataComposerUtil.ResolveService("acs").BaseUrl.FirstOrDefault());
-                if (tokenUrl.Host == "0.0.0.0" || tokenUrl.Host == "127.0.0.1") // Host is vanialla
-                    tokenUrl = new Uri($"{listen.Scheme}://{listen.Host}:{listen.Port}{tokenUrl.AbsolutePath}");
-
-                AuthenticationContext.Current = new AuthenticationContext(AuthenticationContext.SystemPrincipal);
-                this.SecurityDefinitions = new Dictionary<string, SwaggerSecurityDefinition>()
+                using (AuthenticationContext.EnterSystemContext())
                 {
-                    {  "oauth_user", new SwaggerSecurityDefinition()
-                        {
-                            Flow = SwaggerSecurityFlow.password,
-                            Scopes = ApplicationServiceContext.Current.GetService<IRepositoryService<SecurityPolicy>>()?.Find(o=>o.ObsoletionTime == null).ToDictionary(o=>o.Oid, o=>o.Name),
-                            TokenUrl = $"{tokenUrl.ToString().Replace("0.0.0.0", RestOperationContext.Current.IncomingRequest.Url.Host)}/oauth2_token",
-                            Type = SwaggerSecurityType.oauth2
+                    var tokenUrl = new Uri(MetadataComposerUtil.ResolveService("acs").BaseUrl.FirstOrDefault());
+                    if (tokenUrl.Host == "0.0.0.0" || tokenUrl.Host == "127.0.0.1") // Host is vanialla
+                        tokenUrl = new Uri($"{listen.Scheme}://{listen.Host}:{listen.Port}{tokenUrl.AbsolutePath}");
+
+                    this.SecurityDefinitions = new Dictionary<string, SwaggerSecurityDefinition>()
+                    {
+                        {  "oauth_user", new SwaggerSecurityDefinition()
+                            {
+                                Flow = SwaggerSecurityFlow.password,
+                                Scopes = ApplicationServiceContext.Current.GetService<IRepositoryService<SecurityPolicy>>()?.Find(o=>o.ObsoletionTime == null).ToDictionary(o=>o.Oid, o=>o.Name),
+                                TokenUrl = $"{tokenUrl.ToString().Replace("0.0.0.0", RestOperationContext.Current.IncomingRequest.Url.Host)}/oauth2_token",
+                                Type = SwaggerSecurityType.oauth2
+                            }
                         }
-                    }
-                };
-                AuthenticationContext.Current = bauth;
+                    };
+                }
 
             }
 
@@ -119,7 +119,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 var smp = Activator.CreateInstance(service.Behavior.Type) as IServiceBehaviorMetadataProvider;
                 this.InitializeViaMetadata(smp);
             }
-            else 
+            else
                 this.InitializeViaReflection(service);
 
             // Now we want to add a definition for all references
@@ -149,8 +149,8 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         /// </summary>
         private void InitializeViaMetadata(IServiceBehaviorMetadataProvider smp)
         {
-            this.Paths = smp.Description.Operations.GroupBy(o=>o.Path).ToDictionary(o => o.Key, o => new SwaggerPath(o));
-            this.Tags = this.Paths.SelectMany(o => o.Value.Values).SelectMany(o=>o.Tags).Distinct().Select(o=>new SwaggerTag(o, null)).ToList();
+            this.Paths = smp.Description.Operations.GroupBy(o => o.Path).ToDictionary(o => o.Key, o => new SwaggerPath(o));
+            this.Tags = this.Paths.SelectMany(o => o.Value.Values).SelectMany(o => o.Tags).Distinct().Select(o => new SwaggerTag(o, null)).ToList();
         }
 
         /// <summary>
@@ -230,14 +230,14 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
 
                         // Get the resource options for this resource
                         ServiceResourceOptions resourceOptions = serviceOptions?.Resources.FirstOrDefault(o => o.ResourceName == resource.Key);
-                        
+
                         var subPath = new SwaggerPath(path);
                         foreach (var v in subPath)
                         {
 
                             // Check that this resource is supported
                             var resourceCaps = resourceOptions?.Capabilities.FirstOrDefault(c => c.Capability == MetadataComposerUtil.VerbToCapability(v.Key, v.Value.Parameters.Count));
-                            if (resourceOptions != null && resourceCaps == null && 
+                            if (resourceOptions != null && resourceCaps == null &&
                                 v.Key != "head" && v.Key != "options" && v.Key != "search")
                             {
                                 unsupportedVerbs.Add(v.Key);
@@ -261,7 +261,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                             }
 
                             // Query parameters?
-                            if ((v.Key == "get" || v.Key == "head") )
+                            if ((v.Key == "get" || v.Key == "head"))
                             {
                                 // Build query parameters
                                 v.Value.Parameters.AddRange(resource.Value.GetProperties(BindingFlags.Instance | BindingFlags.Public)
@@ -347,9 +347,9 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                         // Child resources? we want to multiply them if so
                         if ((resourcePath.Contains("{childResourceType}") || resourcePath.Contains("{operationName}")) && resourceOptions.ChildResources.Count > 0)
                         {
-                            foreach (var sp in subPath) 
+                            foreach (var sp in subPath)
                                 sp.Value.Parameters.RemoveAll(o => o.Name == "childResourceType" || o.Name == "operationName");
-                            
+
                             // Correct for child resources - rewriting the schema and opts
                             foreach (var cp in resourceOptions.ChildResources)
                             {
@@ -361,7 +361,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                         newPath.Add(v.Key, v.Value);
                                 }
 
-                                this.Paths.Add(resourcePath.Replace("{childResourceType}", cp.ResourceName).Replace("{operationName}",cp.ResourceName), newPath);
+                                this.Paths.Add(resourcePath.Replace("{childResourceType}", cp.ResourceName).Replace("{operationName}", cp.ResourceName), newPath);
                                 foreach (var sp in newPath)
                                 {
                                     // Replace the response if necessary
@@ -374,7 +374,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                     if (sp.Value.Responses.TryGetValue(200, out schema))
                                     {
                                         schema.Schema = resourceSchemaRef;
-                                        
+
                                     }
                                     if (sp.Value.Responses.TryGetValue(201, out schema))
                                         schema.Schema = resourceSchemaRef;
@@ -386,7 +386,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                 }
                             }
                         }
-                        else if(!resourcePath.Contains("{childResourceType}"))
+                        else if (!resourcePath.Contains("{childResourceType}"))
                         {
                             this.Paths.Add(resourcePath, subPath);
                         }
