@@ -21,6 +21,7 @@ using SanteDB.Core.Configuration;
 using SanteDB.Core.Interop;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,12 +41,14 @@ namespace SanteDB.Messaging.Metadata.Configuration
         /// Gets or sets the service contracts to document
         /// </summary>
         [XmlArray("services"), XmlArrayItem("add"), JsonProperty("services")]
+        [DisplayName("External Services"), Description("If you are running SanteDB in a distributed environment, this setting controls the services and locations of the SanteDB infrastructure on other machines. Leave empty if you want to use the default service discovery")]
         public List<ServiceEndpointOptions> Services { get; set; }
 
         /// <summary>
         /// Gets or sets the default host to apply
         /// </summary>
         [XmlElement("host"), JsonProperty("host")]
+        [DisplayName("External Host"), Description("If you're using SanteDB behind a reverse proxy (such as NGINX or OpenHIM) and want the Swagger/OpenAPI documentation to reflect the externally accessable host, set this option")]
         public String ApiHost { get; set; }
     }
 }

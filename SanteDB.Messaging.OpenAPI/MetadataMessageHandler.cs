@@ -29,13 +29,15 @@ using SanteDB.Messaging.Metadata.Configuration;
 using SanteDB.Messaging.Metadata.Rest;
 using System.Diagnostics;
 using SanteDB.Core.Diagnostics;
+using System.ComponentModel;
 
 namespace SanteDB.Messaging.Metadata
 {
     /// <summary>
     /// Represents the daemon service that starts/stops the OpenApi information file
     /// </summary>
-    [ApiServiceProvider("OpenAPI Metadata Exchange", typeof(IMetadataServiceContract), configurationType: typeof(MetadataConfigurationSection))]
+    [Description("Allows SanteDB iCDR/dCDR to expose service metadata using OpenAPI/Swagger 2.0")]
+    [ApiServiceProvider("OpenAPI Metadata Exchange", typeof(MetadataServiceBehavior), configurationType: typeof(MetadataConfigurationSection))]
     public class MetadataMessageHandler : IDaemonService, IApiEndpointProvider
     {
 

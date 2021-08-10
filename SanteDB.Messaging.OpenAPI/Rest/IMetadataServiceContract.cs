@@ -18,6 +18,7 @@
  */
 using RestSrvr.Attributes;
 using SanteDB.Messaging.Metadata.Model.Swagger;
+using SanteDB.Rest.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -31,7 +32,7 @@ namespace SanteDB.Messaging.Metadata.Rest
     /// Metadata Exchange Service
     /// </summary>
     [ServiceContract(Name = "Metadata Service")]
-    public interface IMetadataServiceContract
+    public interface IMetadataServiceContract : IRestApiContractImplementation
     {
 
         /// <summary>
