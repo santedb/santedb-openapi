@@ -269,56 +269,56 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                     .Select(o => new SwaggerParameter(o))
                                   );
 
-                                v.Value.Parameters.AddRange(new SwaggerParameter[]
-                                {
-                                    new SwaggerParameter()
-                                    {
-                                        Name = "_offset",
-                                        Type = SwaggerSchemaElementType.number,
-                                        Description = "Offset of query results",
-                                        Location = SwaggerParameterLocation.query
-                                    },
-                                    new SwaggerParameter()
-                                    {
-                                        Name = "_count",
-                                        Type = SwaggerSchemaElementType.number,
-                                        Description = "Count of query results to include in result set",
-                                        Location = SwaggerParameterLocation.query
-                                    },
-                                    new SwaggerParameter()
-                                    {
-                                        Name = "_lean",
-                                        Type = SwaggerSchemaElementType.boolean,
-                                        Description = "When true, the server will only return minimal data by removing duplicates from the bundle's resource[] property. NOTE: This means that the .count parameter may not match the number of items in resource[], however you should continue to use the .count parameter to increase your offset",
-                                        Location = SwaggerParameterLocation.query
-                                    },
-                                    new SwaggerParameter()
-                                    {
-                                        Name = "_orderBy",
-                                        Type = SwaggerSchemaElementType.@string,
-                                        Description = "Indicates a series of parameters to order the result set by",
-                                        Location = SwaggerParameterLocation.query
-                                    },
-                                    new SwaggerParameter()
-                                    {
-                                        Name = "_queryId",
-                                        Type = SwaggerSchemaElementType.@string,
-                                        Description = "The unique identifier for the query (for continuation)",
-                                        Location = SwaggerParameterLocation.query
-                                    },
-                                    new SwaggerParameter()
-                                    {
-                                        Name = "_viewModel",
-                                        Type = SwaggerSchemaElementType.@string,
-                                        Description = "When using the view-model content-type, the view model to use",
-                                        Location = SwaggerParameterLocation.query,
-                                        Enum = new List<string>()
-                                        {
-                                            "min",
-                                            "max"
-                                        }
-                                    }
-                                });
+                                //v.Value.Parameters.AddRange(new SwaggerParameter[]
+                                //{
+                                //    new SwaggerParameter()
+                                //    {
+                                //        Name = "_offset",
+                                //        Type = SwaggerSchemaElementType.number,
+                                //        Description = "Offset of query results",
+                                //        Location = SwaggerParameterLocation.query
+                                //    },
+                                //    new SwaggerParameter()
+                                //    {
+                                //        Name = "_count",
+                                //        Type = SwaggerSchemaElementType.number,
+                                //        Description = "Count of query results to include in result set",
+                                //        Location = SwaggerParameterLocation.query
+                                //    },
+                                //    new SwaggerParameter()
+                                //    {
+                                //        Name = "_lean",
+                                //        Type = SwaggerSchemaElementType.boolean,
+                                //        Description = "When true, the server will only return minimal data by removing duplicates from the bundle's resource[] property. NOTE: This means that the .count parameter may not match the number of items in resource[], however you should continue to use the .count parameter to increase your offset",
+                                //        Location = SwaggerParameterLocation.query
+                                //    },
+                                //    new SwaggerParameter()
+                                //    {
+                                //        Name = "_orderBy",
+                                //        Type = SwaggerSchemaElementType.@string,
+                                //        Description = "Indicates a series of parameters to order the result set by",
+                                //        Location = SwaggerParameterLocation.query
+                                //    },
+                                //    new SwaggerParameter()
+                                //    {
+                                //        Name = "_queryId",
+                                //        Type = SwaggerSchemaElementType.@string,
+                                //        Description = "The unique identifier for the query (for continuation)",
+                                //        Location = SwaggerParameterLocation.query
+                                //    },
+                                //    new SwaggerParameter()
+                                //    {
+                                //        Name = "_viewModel",
+                                //        Type = SwaggerSchemaElementType.@string,
+                                //        Description = "When using the view-model content-type, the view model to use",
+                                //        Location = SwaggerParameterLocation.query,
+                                //        Enum = new List<string>()
+                                //        {
+                                //            "min",
+                                //            "max"
+                                //        }
+                                //    }
+                                //});
 
                             }
 
@@ -353,6 +353,16 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                             // Correct for child resources - rewriting the schema and opts
                             foreach (var cp in resourceOptions.ChildResources)
                             {
+
+                                // Bound to 
+                                if (resourcePath.Contains("{id}") && !cp.Scope.HasFlag(ChildObjectScopeBinding.Instance) ||
+                                    !resourcePath.Contains("{id}") && !cp.Scope.HasFlag(ChildObjectScopeBinding.Class) ||
+                                    resourcePath.Contains("$") && !cp.Classification.HasFlag(ChildObjectClassification.RpcOperation) ||
+                                    !resourcePath.Contains("$") && !cp.Classification.HasFlag(ChildObjectClassification.Resource))
+                                {
+                                    continue;
+                                }
+
                                 var newPath = new SwaggerPath();
                                 foreach (var v in subPath)
                                 {
@@ -383,6 +393,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                     var bodyParm = sp.Value.Parameters.FirstOrDefault(o => o.Location == SwaggerParameterLocation.body && o.Schema?.NetType?.IsAssignableFrom(resource.Value) == true);
                                     if (bodyParm != null)
                                         bodyParm.Schema = resourceSchemaRef;
+
                                 }
                             }
                         }
