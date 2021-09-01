@@ -86,7 +86,7 @@
           <Project>{786BD0EE-1806-4158-BA45-80249AC6DFE7}</Project>
           <Name>SanteDB.Rest.Common</Name>
         </ProjectReference>
-        <ProjectReference Include="..\..\santedb-docker\SanteDB.Docker.Core\SanteDB.Docker.Core.csproj"/>
+        <ProjectReference Include="..\..\santedb-docker\SanteDB.Docker.Core\SanteDB.Docker.Core.csproj" />
       </ItemGroup>
     </When>
     <Otherwise>
@@ -104,7 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>12.0.3</Version>
+      <Version>13.0.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
