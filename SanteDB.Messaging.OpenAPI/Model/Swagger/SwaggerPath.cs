@@ -19,6 +19,7 @@
  * Date: 2021-8-5
  */
 using Newtonsoft.Json;
+using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Interop.Description;
 using System;
 using System.Collections.Generic;
@@ -58,7 +59,14 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         {
             foreach (var itm in description)
             {
-                this.Add(itm.Verb.ToLower(), new SwaggerPathDefinition(itm));
+                if (!this.ContainsKey(itm.Verb.ToLower()))
+                {
+                    this.Add(itm.Verb.ToLower(), new SwaggerPathDefinition(itm));
+                }
+                else
+                {
+                    Tracer.GetTracer(typeof(SwaggerPath)).TraceWarning($"Duplicate verb {itm.Verb.ToLower()} on {itm.Path}");
+                }
             }
         }
     }
