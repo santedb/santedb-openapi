@@ -2,22 +2,23 @@
  * Copyright (C) 2021 - 2021, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you 
- * may not use this file except in compliance with the License. You may 
- * obtain a copy of the License at 
- * 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
- * License for the specific language governing permissions and limitations under 
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * User: fyfej
  * Date: 2021-8-5
  */
+
 using Newtonsoft.Json;
 using RestSrvr;
 using RestSrvr.Attributes;
@@ -30,6 +31,7 @@ using SanteDB.Core.Security;
 using SanteDB.Core.Services;
 using SanteDB.Messaging.Metadata.Composer;
 using SanteDB.Messaging.Metadata.Configuration;
+using SanteDB.Rest.Common.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,7 +48,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     [JsonObject(nameof(SwaggerDocument))]
     public class SwaggerDocument
     {
-
         /// <summary>
         /// Gets the version of the swagger document
         /// </summary>
@@ -62,7 +63,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             this.Consumes = new List<string>();
         }
 
-
         /// <summary>
         /// Create new swagger document
         /// </summary>
@@ -70,7 +70,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         {
             var listen = new Uri(service.BaseUrl.First());
             this.BasePath = listen.AbsolutePath;
-            listen = new Uri(ApplicationServiceContext.Current.GetService<IConfigurationManager>().GetSection<MetadataConfigurationSection>().ApiHost ?? listen.ToString());
+            listen = new Uri(ApplicationServiceContext.Current.GetService<IConfigurationManager>().GetSection<RestConfigurationSection>().ExternalHostPort ?? listen.ToString());
             this.Info = new SwaggerServiceInfo()
             {
                 Title = MetadataComposerUtil.GetElementDocumentation(service.Behavior.Type, MetaDataElementType.Summary) ?? service.Behavior.Type.GetCustomAttribute<ServiceBehaviorAttribute>()?.Name,
@@ -85,12 +85,11 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 listen.Scheme
             };
 
-
             // What this option produces
             this.Produces.AddRange(service.Contracts.SelectMany(c => c.Type.GetCustomAttributes<ServiceProducesAttribute>().Select(o => o.MimeType)));
             this.Consumes.AddRange(service.Contracts.SelectMany(c => c.Type.GetCustomAttributes<ServiceConsumesAttribute>().Select(o => o.MimeType)));
 
-            // Security requires us to peek into the runtime environment ... 
+            // Security requires us to peek into the runtime environment ...
             var serviceCaps = MetadataComposerUtil.GetServiceCapabilities(service.ServiceType);
             if (serviceCaps.HasFlag(ServiceEndpointCapabilities.BearerAuth))
             {
@@ -112,7 +111,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                         }
                     };
                 }
-
             }
 
             // Provides its own behavior configuration
@@ -177,7 +175,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 resourceTypes = service.Contracts.SelectMany(c => c.Type.GetCustomAttributes<ServiceKnownResourceAttribute>().Select(o => new KeyValuePair<String, Type>(o.Type.GetCustomAttribute<XmlRootAttribute>()?.ElementName, o.Type)).Where(o => !String.IsNullOrEmpty(o.Key))).ToList();
             }
 
-
             // Construct the paths
             var operations = service.Contracts.SelectMany(c => c.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
                     .Select(o => new { Rest = o.GetCustomAttribute<RestInvokeAttribute>(), ContractMethod = o, BehaviorMethod = service.Behavior.Type.GetMethod(o.Name, o.GetParameters().Select(p => p.ParameterType).ToArray()) }))
@@ -194,7 +191,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 var path = new SwaggerPath();
                 foreach (var val in operation)
                 {
-
                     // Process operations
                     var pathDefinition = new SwaggerPathDefinition(val.BehaviorMethod, val.ContractMethod);
                     path.Add(val.Rest.Method.ToLower(), pathDefinition);
@@ -202,8 +198,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                         pathDefinition.Consumes.AddRange(this.Consumes);
                     if (pathDefinition.Produces.Count == 0)
                         pathDefinition.Produces.AddRange(this.Produces);
-
-
 
                     // Any faults?
                     foreach (var flt in service.Contracts.SelectMany(t => t.Type.GetCustomAttributes<ServiceFaultAttribute>()))
@@ -216,7 +210,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                 NetType = flt.FaultType
                             }
                         });
-
                 }
 
                 if (operation.Key.Contains("{resourceType}"))
@@ -236,7 +229,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                         var subPath = new SwaggerPath(path);
                         foreach (var v in subPath)
                         {
-
                             // Check that this resource is supported
                             var resourceCaps = resourceOptions?.Capabilities.FirstOrDefault(c => c.Capability == MetadataComposerUtil.VerbToCapability(v.Key, v.Value.Parameters.Count));
                             if (resourceOptions != null && resourceCaps == null &&
@@ -250,7 +242,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                             v.Value.Tags.Add(resource.Key);
                             v.Value.Parameters.RemoveAll(o => o.Name == "resourceType");
 
-                            // Security? 
+                            // Security?
                             if (this.SecurityDefinitions.Count > 0 && resourceCaps?.Demand.Length > 0)
                             {
                                 v.Value.Security = new List<SwaggerPathSecurity>()
@@ -321,7 +313,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                 //        }
                                 //    }
                                 //});
-
                             }
 
                             // Replace the response if necessary
@@ -355,8 +346,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                             // Correct for child resources - rewriting the schema and opts
                             foreach (var cp in resourceOptions.ChildResources)
                             {
-
-                                // Bound to 
+                                // Bound to
                                 if (resourcePath.Contains("{id}") && !cp.Scope.HasFlag(ChildObjectScopeBinding.Instance) ||
                                     !resourcePath.Contains("{id}") && !cp.Scope.HasFlag(ChildObjectScopeBinding.Class) ||
                                     resourcePath.Contains("$") && !cp.Classification.HasFlag(ChildObjectClassification.RpcOperation) ||
@@ -386,7 +376,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                     if (sp.Value.Responses.TryGetValue(200, out schema))
                                     {
                                         schema.Schema = resourceSchemaRef;
-
                                     }
                                     if (sp.Value.Responses.TryGetValue(201, out schema))
                                         schema.Schema = resourceSchemaRef;
@@ -395,7 +384,6 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                     var bodyParm = sp.Value.Parameters.FirstOrDefault(o => o.Location == SwaggerParameterLocation.body && o.Schema?.NetType?.IsAssignableFrom(resource.Value) == true);
                                     if (bodyParm != null)
                                         bodyParm.Schema = resourceSchemaRef;
-
                                 }
                             }
                         }
@@ -477,6 +465,5 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         /// </summary>
         [JsonProperty("consumes")]
         public List<String> Consumes { get; set; }
-
     }
 }
