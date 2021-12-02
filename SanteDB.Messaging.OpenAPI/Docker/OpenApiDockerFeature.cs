@@ -27,6 +27,7 @@ using SanteDB.Messaging.Metadata.Rest;
 using SanteDB.Rest.Common.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,6 +37,7 @@ namespace SanteDB.Messaging.Metadata.Docker
     /// <summary>
     /// OpenAPI Feature
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class OpenApiDockerFeature : IDockerFeature
     {
         /// <summary>
