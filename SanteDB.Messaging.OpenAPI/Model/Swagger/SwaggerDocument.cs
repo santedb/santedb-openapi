@@ -218,7 +218,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                     {
                         var resourcePath = operation.Key.Replace("{resourceType}", resource.Key);
                         if (this.Paths.ContainsKey(resourcePath) ||
-                            resourcePath.Contains("history") && !typeof(IVersionedEntity).IsAssignableFrom(resource.Value)) continue;
+                            resourcePath.Contains("history") && !typeof(IVersionedData).IsAssignableFrom(resource.Value)) continue;
 
                         // Create a copy of the path and customize it to the resource
                         List<String> unsupportedVerbs = new List<string>();
