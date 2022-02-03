@@ -20,6 +20,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Serialization;
@@ -55,6 +56,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// Represents the swagger parameter
     /// </summary>
     [JsonObject(nameof(SwaggerParameter))]
+    [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerParameter : SwaggerSchemaElement
     {
 

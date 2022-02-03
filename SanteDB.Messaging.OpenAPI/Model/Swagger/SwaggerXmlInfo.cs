@@ -18,6 +18,8 @@
  * User: fyfej
  * Date: 2021-8-5
  */
+
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 using System.Xml.Serialization;
 
@@ -27,6 +29,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// Represents swagger xml information 
     /// </summary>
     [JsonObject(nameof(SwaggerXmlInfo))]
+    [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerXmlInfo
     {
 

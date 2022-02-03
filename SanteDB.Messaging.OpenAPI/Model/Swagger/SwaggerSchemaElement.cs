@@ -27,6 +27,7 @@ using SanteDB.Core.Model;
 using System.Linq;
 using System.Xml.Serialization;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using SanteDB.Core.Interop.Description;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
@@ -78,6 +79,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// Represents a base class for swagger schema elements
     /// </summary>
     [JsonObject(nameof(SwaggerSchemaElement))]
+    [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerSchemaElement
     {
 

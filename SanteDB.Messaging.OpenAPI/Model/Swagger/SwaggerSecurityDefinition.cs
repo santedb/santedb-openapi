@@ -22,6 +22,7 @@ using Newtonsoft.Json;
 using System.Xml.Serialization;
 using System.Collections.Generic;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
 {
@@ -50,6 +51,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// Represents a security definition
     /// </summary>
     [JsonObject(nameof(SwaggerSecurityDefinition))]
+    [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerSecurityDefinition 
     {
 

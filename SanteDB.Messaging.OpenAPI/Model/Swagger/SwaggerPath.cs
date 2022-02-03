@@ -23,6 +23,7 @@ using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Interop.Description;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,6 +34,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// Represents a swagger path
     /// </summary>
     [JsonDictionary(nameof(SwaggerPath))]
+    [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerPath : Dictionary<String, SwaggerPathDefinition>
     {
 

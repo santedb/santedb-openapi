@@ -34,6 +34,7 @@ using SanteDB.Messaging.Metadata.Configuration;
 using SanteDB.Rest.Common.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -46,6 +47,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// Represents the root swagger document
     /// </summary>
     [JsonObject(nameof(SwaggerDocument))]
+    [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerDocument
     {
         /// <summary>

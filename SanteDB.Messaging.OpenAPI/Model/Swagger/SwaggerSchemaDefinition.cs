@@ -22,6 +22,7 @@ using Newtonsoft.Json;
 using System.Xml.Serialization;
 using System.Collections.Generic;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using SanteDB.Messaging.Metadata.Composer;
 using System.Reflection;
@@ -34,6 +35,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// Represents a swagger schema definition
     /// </summary>
     [JsonObject(nameof(SwaggerSchemaDefinition))]
+    [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerSchemaDefinition
     {
 

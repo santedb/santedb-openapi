@@ -20,6 +20,7 @@
  */
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
@@ -28,6 +29,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// Represents a single instance of security data on a path
     /// </summary>
     [JsonDictionary(nameof(SwaggerPathSecurity))]
+    [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerPathSecurity : Dictionary<string, List<string>>
     {
 

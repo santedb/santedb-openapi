@@ -22,6 +22,7 @@ using Newtonsoft.Json;
 using System.Xml.Serialization;
 using System.Collections.Generic;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
 {
@@ -29,6 +30,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// Represents a swagger tag
     /// </summary>
     [JsonObject(nameof(SwaggerTag))]
+    [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerTag
     {
 

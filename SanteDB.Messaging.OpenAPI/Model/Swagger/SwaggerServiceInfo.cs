@@ -21,10 +21,12 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
 {
     [JsonObject(nameof(SwaggerServiceInfo))]
+    [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerServiceInfo
     {
 
