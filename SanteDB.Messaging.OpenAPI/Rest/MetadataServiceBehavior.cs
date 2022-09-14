@@ -87,7 +87,8 @@ namespace SanteDB.Messaging.Metadata.Rest
             // Output YAML
             var sw = new StringBuilder();
             sw.Append("{ urls: [");
-            foreach (var api in services.Where(o => o.Behavior != null))
+            var apis = services.ToArray().Where(o => o.Behavior != null);
+            foreach (var api in apis)
             {
                 var serviceName = typeof(ServiceEndpointType).GetField(api.ServiceType.ToString()).GetCustomAttribute<XmlEnumAttribute>()?.Name ?? api.ServiceType.ToString();
                 sw.AppendFormat("{{ \"url\": \"{0}\", ", $"/{localPath}{serviceName}/swagger.json");
