@@ -84,7 +84,7 @@ namespace SanteDB.Messaging.Metadata.Docker
             {
                 openApiRestConfiguration = new RestServiceConfiguration()
                 {
-                    Name = "META",
+                    ConfigurationName = MetadataMessageHandler.ConfigurationName,
                     Endpoints = new List<RestEndpointConfiguration>()
                     {
                         new RestEndpointConfiguration()

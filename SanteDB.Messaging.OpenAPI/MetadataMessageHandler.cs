@@ -81,6 +81,11 @@ namespace SanteDB.Messaging.Metadata
         public ServiceEndpointCapabilities Capabilities => (ServiceEndpointCapabilities)ApplicationServiceContext.Current.GetService<IRestServiceFactory>().GetServiceCapabilities(this.m_webHost);
 
         /// <summary>
+        /// Configuration service name
+        /// </summary>
+        public const string ConfigurationName = "META";
+
+        /// <summary>
         /// Default ctor
         /// </summary>
         public MetadataMessageHandler()
@@ -114,7 +119,7 @@ namespace SanteDB.Messaging.Metadata
         {
             this.Starting?.Invoke(this, EventArgs.Empty);
 
-            this.m_webHost = ApplicationServiceContext.Current.GetService<IRestServiceFactory>().CreateService(typeof(MetadataServiceBehavior));
+            this.m_webHost = ApplicationServiceContext.Current.GetService<IRestServiceFactory>().CreateService(ConfigurationName);
 
             // Add service behaviors
             foreach (ServiceEndpoint endpoint in this.m_webHost.Endpoints)
