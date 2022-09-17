@@ -21,6 +21,7 @@
  -->
 <RestServiceConfiguration xmlns="http://santedb.org/configuration" name="META">
   <endpoint address="http://0.0.0.0:8080/api-docs" contract="SanteDB.Messaging.Metadata.Rest.IMetadataServiceContract, SanteDB.Messaging.Metadata">
+    <add type="SanteDB.Rest.Common.Behavior.AcceptLanguageEndpointBehavior, SanteDB.Rest.Common"/>
     <add type="SanteDB.Rest.Common.Behavior.MessageCompressionEndpointBehavior, SanteDB.Rest.Common"/>
   </endpoint>
 </RestServiceConfiguration>
