@@ -18,29 +18,23 @@
  * User: fyfej
  * Date: 2022-5-30
  */
+using RestSrvr;
+using RestSrvr.Attributes;
+using SanteDB.Core;
+using SanteDB.Core.Diagnostics;
+using SanteDB.Core.Http;
+using SanteDB.Core.Interop;
+using SanteDB.Core.Services;
+using SanteDB.Messaging.Metadata.Composer;
+using SanteDB.Messaging.Metadata.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
-using RestSrvr;
-using RestSrvr.Attributes;
-using RestSrvr.Exceptions;
-using SanteDB.Core;
-using SanteDB.Core.Diagnostics;
-using SanteDB.Core.Http;
-using SanteDB.Core.Interfaces;
-using SanteDB.Core.Interop;
-using SanteDB.Core.Services;
-using SanteDB.Messaging.Metadata.Composer;
-using SanteDB.Messaging.Metadata.Configuration;
-using SanteDB.Messaging.Metadata.Model.Swagger;
-using SanteDB.Rest.Common.Fault;
 
 namespace SanteDB.Messaging.Metadata.Rest
 {
@@ -81,7 +75,9 @@ namespace SanteDB.Messaging.Metadata.Rest
             RestOperationContext.Current.OutgoingResponse.ContentType = "application/json";
             IEnumerable<ServiceEndpointOptions> services = ApplicationServiceContext.Current.GetService<IConfigurationManager>().GetSection<MetadataConfigurationSection>().Services;
             if (services == null || services.Count() == 0)
+            {
                 services = ApplicationServiceContext.Current.GetService<IServiceManager>().GetServices().OfType<IApiEndpointProvider>().Select(o => new ServiceEndpointOptions(o));
+            }
 
             var localPath = RestOperationContext.Current.IncomingRequest.Url.Segments[1];
             // Output YAML
@@ -126,7 +122,7 @@ namespace SanteDB.Messaging.Metadata.Rest
                 }
                 else
                 {
-                    RestOperationContext.Current.OutgoingResponse.StatusCode = 200; /// HttpStatusCode.OK;
+                    RestOperationContext.Current.OutgoingResponse.StatusCode = 200; // HttpStatusCode.OK;
                     //RestOperationContext.Current.OutgoingResponse.ContentLength = new FileInfo(contentPath).Length;
                     RestOperationContext.Current.OutgoingResponse.ContentType = DefaultContentTypeMapper.GetContentType(contentPath);
                     return typeof(MetadataServiceBehavior).Assembly.GetManifestResourceStream(contentPath);

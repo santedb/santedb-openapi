@@ -18,20 +18,16 @@
  * User: fyfej
  * Date: 2022-5-30
  */
-using SanteDB.Core.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using RestSrvr;
-using SanteDB.Core.Interop;
 using SanteDB.Core;
+using SanteDB.Core.Diagnostics;
+using SanteDB.Core.Interop;
+using SanteDB.Core.Services;
 using SanteDB.Messaging.Metadata.Configuration;
 using SanteDB.Messaging.Metadata.Rest;
-using System.Diagnostics;
-using SanteDB.Core.Diagnostics;
+using System;
 using System.ComponentModel;
+using System.Linq;
 
 namespace SanteDB.Messaging.Metadata
 {
@@ -123,7 +119,9 @@ namespace SanteDB.Messaging.Metadata
 
             // Add service behaviors
             foreach (ServiceEndpoint endpoint in this.m_webHost.Endpoints)
+            {
                 this.m_traceSource.TraceInfo("Starting MetadataExchange on {0}...", endpoint.Description.ListenUri);
+            }
 
             // Start the webhost
             this.m_webHost.Start();

@@ -19,9 +19,8 @@
  * Date: 2022-5-30
  */
 using Newtonsoft.Json;
-using System.Xml.Serialization;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
@@ -52,7 +51,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// </summary>
     [JsonObject(nameof(SwaggerSecurityDefinition))]
     [ExcludeFromCodeCoverage] // Serialization class
-    public class SwaggerSecurityDefinition 
+    public class SwaggerSecurityDefinition
     {
 
         /// <summary>

@@ -21,7 +21,6 @@
 using Newtonsoft.Json;
 using RestSrvr.Attributes;
 using SanteDB.Core.Interop.Description;
-using SanteDB.Core.Model;
 using SanteDB.Core.Security;
 using SanteDB.Messaging.Metadata.Composer;
 using SanteDB.Rest.Common.Attributes;
@@ -30,7 +29,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using System.Xml.Serialization;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
 {
@@ -109,10 +107,13 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
 
             var parms = contractMethod.GetParameters();
             if (parms.Length > 0)
+            {
                 this.Parameters = parms.Select(o => new SwaggerParameter(contractMethod, o, operationAtt)).ToList();
+            }
 
             var demands = behaviorMethod.GetCustomAttributes<DemandAttribute>();
             if (demands.Count() > 0)
+            {
                 this.Security = new List<SwaggerPathSecurity>()
                 {
                         new SwaggerPathSecurity()
@@ -120,6 +121,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                             { "oauth_user", demands.Select(o=>o.PolicyId).ToList() }
                         }
                 };
+            }
 
             // Return type is not void
             if (behaviorMethod.ReturnType != typeof(void))
@@ -127,11 +129,13 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 SwaggerSchemaElementType type = SwaggerSchemaElementType.@object;
 
                 if (SwaggerSchemaElement.m_typeMap.TryGetValue(behaviorMethod.ReturnType, out type))
+                {
                     this.Responses.Add(200, new SwaggerSchemaElement()
                     {
                         Type = SwaggerSchemaElementType.@object,
                         Description = "Operation was completed successfully"
                     });
+                }
                 else
                 {
                     // Get the response type name
@@ -148,13 +152,16 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 }
             }
             else
+            {
                 this.Responses.Add(204, new SwaggerSchemaElement()
                 {
                     Description = "There is not response for this method"
                 });
+            }
 
             // Any faults?
             foreach (var flt in contractMethod.GetCustomAttributes<ServiceFaultAttribute>())
+            {
                 this.Responses.Add(flt.StatusCode, new SwaggerSchemaElement()
                 {
                     Description = flt.Condition,
@@ -164,6 +171,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                         Reference = $"#/definitions/{MetadataComposerUtil.CreateSchemaReference(flt.FaultType)}"
                     }
                 });
+            }
 
             // Service Query PArameters
             foreach (var prm in contractMethod.GetCustomAttributes<UrlParameterAttribute>().Union(behaviorMethod.GetCustomAttributes<UrlParameterAttribute>()))
@@ -174,11 +182,11 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                     Name = prm.Name,
                     Location = SwaggerParameterLocation.query,
                     Type = SwaggerSchemaElement.m_typeMap[prm.Type.StripNullable()],
-                    Format =  SwaggerSchemaElement.m_formatMap[prm.Type.StripNullable()],
+                    Format = SwaggerSchemaElement.m_formatMap[prm.Type.StripNullable()],
                     Required = prm.Required
                 };
-                
-                this.Parameters.Add(sp); 
+
+                this.Parameters.Add(sp);
             }
         }
 

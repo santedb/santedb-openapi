@@ -29,15 +29,12 @@ using SanteDB.Core.Model.Security;
 using SanteDB.Core.Security;
 using SanteDB.Core.Services;
 using SanteDB.Messaging.Metadata.Composer;
-using SanteDB.Messaging.Metadata.Configuration;
 using SanteDB.Rest.Common.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
@@ -98,7 +95,9 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 {
                     var tokenUrl = new Uri(MetadataComposerUtil.ResolveService("acs").BaseUrl.FirstOrDefault());
                     if (tokenUrl.Host == "0.0.0.0" || tokenUrl.Host == "127.0.0.1") // Host is vanialla
+                    {
                         tokenUrl = new Uri($"{listen.Scheme}://{listen.Host}:{listen.Port}{tokenUrl.AbsolutePath}");
+                    }
 
                     this.SecurityDefinitions = new Dictionary<string, SwaggerSecurityDefinition>()
                     {
@@ -121,7 +120,9 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 this.InitializeViaMetadata(smp);
             }
             else
+            {
                 this.InitializeViaReflection(service);
+            }
 
             // Now we want to add a definition for all references
             // This LINQ expression allows for scanning of any properties where there is currently no definition for a particular type
@@ -134,12 +135,16 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 .Where(o => o != null && !this.Definitions.ContainsKey(MetadataComposerUtil.CreateSchemaReference(o)))
                 .Distinct();
             while (missingDefns.Count() > 0)
+            {
                 foreach (var def in missingDefns.AsParallel().ToList())
                 {
                     var name = MetadataComposerUtil.CreateSchemaReference(def);
                     if (!this.Definitions.ContainsKey(name))
+                    {
                         this.Definitions.Add(name, new SwaggerSchemaDefinition(def));
+                    }
                 }
+            }
 
             // Create the definitions
             this.Tags = this.Tags.OrderBy(o => o.Name).ToList();
@@ -168,7 +173,9 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 var behaviorInstance = Activator.CreateInstance(service.Behavior.Type);
                 serviceOptions = optionsMethod.Invoke(behaviorInstance, null) as ServiceOptions;
                 if (serviceOptions != null) // Remove unused resources
+                {
                     resourceTypes = serviceOptions.Resources.Select(o => new KeyValuePair<string, Type>(o.ResourceName, o.ResourceType)).ToList();
+                }
             }
             else
             {
@@ -183,7 +190,9 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
 
             // Create tags
             if (operations.Any(o => o.Rest.UriTemplate.Contains("{resourceType}")))
+            {
                 this.Tags = resourceTypes.Select(o => new SwaggerTag(o.Key, MetadataComposerUtil.GetElementDocumentation(o.Value, MetaDataElementType.Summary))).ToList();
+            }
 
             // Process operations
             foreach (var operation in operations.GroupBy(o => o.Rest.UriTemplate.StartsWith("/") ? o.Rest.UriTemplate : "/" + o.Rest.UriTemplate))
@@ -196,12 +205,18 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                     var pathDefinition = new SwaggerPathDefinition(val.BehaviorMethod, val.ContractMethod);
                     path.Add(val.Rest.Method.ToLower(), pathDefinition);
                     if (pathDefinition.Consumes.Count == 0)
+                    {
                         pathDefinition.Consumes.AddRange(this.Consumes);
+                    }
+
                     if (pathDefinition.Produces.Count == 0)
+                    {
                         pathDefinition.Produces.AddRange(this.Produces);
+                    }
 
                     // Any faults?
                     foreach (var flt in service.Contracts.SelectMany(t => t.Type.GetCustomAttributes<ServiceFaultAttribute>()))
+                    {
                         pathDefinition.Responses.Add(flt.StatusCode, new SwaggerSchemaElement()
                         {
                             Description = flt.Condition,
@@ -211,6 +226,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                 NetType = flt.FaultType
                             }
                         });
+                    }
                 }
 
                 if (operation.Key.Contains("{resourceType}"))
@@ -219,7 +235,10 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                     {
                         var resourcePath = operation.Key.Replace("{resourceType}", resource.Key);
                         if (this.Paths.ContainsKey(resourcePath) ||
-                            resourcePath.Contains("history") && !typeof(IVersionedData).IsAssignableFrom(resource.Value)) continue;
+                            resourcePath.Contains("history") && !typeof(IVersionedData).IsAssignableFrom(resource.Value))
+                        {
+                            continue;
+                        }
 
                         // Create a copy of the path and customize it to the resource
                         List<String> unsupportedVerbs = new List<string>();
@@ -324,25 +343,36 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                             };
                             SwaggerSchemaElement schema = null;
                             if (v.Value.Responses.TryGetValue(200, out schema))
+                            {
                                 schema.Schema = resourceSchemaRef;
+                            }
+
                             if (v.Value.Responses.TryGetValue(201, out schema))
+                            {
                                 schema.Schema = resourceSchemaRef;
+                            }
 
                             // Replace the body if necessary
                             var bodyParm = v.Value.Parameters.FirstOrDefault(o => o.Location == SwaggerParameterLocation.body && o.Schema?.NetType?.IsAssignableFrom(resource.Value) == true);
                             if (bodyParm != null)
+                            {
                                 bodyParm.Schema = resourceSchemaRef;
+                            }
                         } // foreach subpath
 
                         // Add the resource path?
                         foreach (var nv in unsupportedVerbs)
+                        {
                             subPath.Remove(nv);
+                        }
 
                         // Child resources? we want to multiply them if so
                         if ((resourcePath.Contains("{childResourceType}") || resourcePath.Contains("{operationName}")) && resourceOptions.ChildResources.Count > 0)
                         {
                             foreach (var sp in subPath)
+                            {
                                 sp.Value.Parameters.RemoveAll(o => o.Name == "childResourceType" || o.Name == "operationName");
+                            }
 
                             // Correct for child resources - rewriting the schema and opts
                             foreach (var cp in resourceOptions.ChildResources)
@@ -361,7 +391,9 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                 {
                                     var childCaps = cp.Capabilities.FirstOrDefault(c => c.Capability == MetadataComposerUtil.VerbToCapability(v.Key, v.Value.Parameters.Count));
                                     if (childCaps != null)
+                                    {
                                         newPath.Add(v.Key, v.Value);
+                                    }
                                 }
 
                                 this.Paths.Add(resourcePath.Replace("{childResourceType}", cp.ResourceName).Replace("{operationName}", cp.ResourceName), newPath);
@@ -379,12 +411,16 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                         schema.Schema = resourceSchemaRef;
                                     }
                                     if (sp.Value.Responses.TryGetValue(201, out schema))
+                                    {
                                         schema.Schema = resourceSchemaRef;
+                                    }
 
                                     // Replace the body if necessary
                                     var bodyParm = sp.Value.Parameters.FirstOrDefault(o => o.Location == SwaggerParameterLocation.body && o.Schema?.NetType?.IsAssignableFrom(resource.Value) == true);
                                     if (bodyParm != null)
+                                    {
                                         bodyParm.Schema = resourceSchemaRef;
+                                    }
                                 }
                             }
                         }

@@ -25,8 +25,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
 {
@@ -49,7 +47,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         /// <summary>
         /// Create a copied swagger path
         /// </summary>
-        public SwaggerPath(IDictionary<String, SwaggerPathDefinition> copy) : base(copy.ToDictionary(o=>o.Key, o=>new SwaggerPathDefinition(o.Value)))
+        public SwaggerPath(IDictionary<String, SwaggerPathDefinition> copy) : base(copy.ToDictionary(o => o.Key, o => new SwaggerPathDefinition(o.Value)))
         {
 
         }

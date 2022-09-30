@@ -19,14 +19,9 @@
  * Date: 2022-5-30
  */
 using RestSrvr.Attributes;
-using SanteDB.Messaging.Metadata.Model.Swagger;
 using SanteDB.Rest.Common;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SanteDB.Messaging.Metadata.Rest
 {

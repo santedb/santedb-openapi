@@ -19,16 +19,15 @@
  * Date: 2022-5-30
  */
 using Newtonsoft.Json;
+using SanteDB.Core.Interop.Description;
 using SanteDB.Messaging.Metadata.Composer;
 using System;
-using System.Collections.Generic;
-using System.Reflection;
-using SanteDB.Core.Model;
-using System.Linq;
-using System.Xml.Serialization;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using SanteDB.Core.Interop.Description;
+using System.Linq;
+using System.Reflection;
+using System.Xml.Serialization;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
 {
@@ -135,11 +134,15 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             this.Type = copy.Type;
             this.Required = copy.Required;
 
-            if(copy.Enum != null)
+            if (copy.Enum != null)
+            {
                 this.Enum = new List<string>(copy.Enum);
+            }
 
             if (copy.Schema != null)
+            {
                 this.Schema = new SwaggerSchemaDefinition(copy.Schema);
+            }
         }
 
         /// <summary>
@@ -153,9 +156,9 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             if (property.PropertyType.StripNullable().IsEnum)
             {
                 this.Enum = property.PropertyType.StripNullable().GetFields().Select(f => f.GetCustomAttributes<XmlEnumAttribute>().FirstOrDefault()?.Name).Where(o => !string.IsNullOrEmpty(o)).ToList();
-                if(this.Enum.Count == 0)
+                if (this.Enum.Count == 0)
                 {
-                    this.Enum = property.PropertyType.StripNullable().GetFields().Select(f => f.Name).Where(o=>o != "value__").ToList();
+                    this.Enum = property.PropertyType.StripNullable().GetFields().Select(f => f.Name).Where(o => o != "value__").ToList();
 
                 }
                 this.Type = SwaggerSchemaElementType.@string;
@@ -166,23 +169,31 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
 
                 Type elementType = null;
                 if (property.PropertyType.IsArray)
+                {
                     elementType = property.PropertyType.GetElementType();
+                }
                 else if (property.PropertyType.IsConstructedGenericType)
+                {
                     elementType = property.PropertyType.GetGenericArguments()[0];
+                }
 
                 if (elementType == null || !m_typeMap.TryGetValue(elementType.StripNullable(), out type))
+                {
                     this.Items = new SwaggerSchemaDefinition()
                     {
                         Type = SwaggerSchemaElementType.@object,
                         Reference = elementType != null ? $"#/definitions/{MetadataComposerUtil.CreateSchemaReference(elementType)}" : null,
                         NetType = elementType
                     };
+                }
                 else
+                {
                     this.Items = new SwaggerSchemaDefinition()
                     {
                         Type = type,
                         Format = m_formatMap[elementType.StripNullable()]
                     };
+                }
             }
             else if (!m_typeMap.TryGetValue(property.PropertyType.StripNullable(), out type))
             {
@@ -201,10 +212,13 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             var xmlElement = property.GetCustomAttributes<XmlElementAttribute>().FirstOrDefault();
             var xmlAttribute = property.GetCustomAttribute<XmlAttributeAttribute>();
             if (xmlElement != null)
+            {
                 this.Xml = new SwaggerXmlInfo(xmlElement);
+            }
             else if (xmlAttribute != null)
+            {
                 this.Xml = new SwaggerXmlInfo(xmlAttribute);
-
+            }
         }
 
         /// <summary>
@@ -219,7 +233,9 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 this.Schema = new SwaggerSchemaDefinition(description.ResourceType);
             }
             else
+            {
                 this.Type = m_typeMap[description.Type];
+            }
         }
 
         /// <summary>

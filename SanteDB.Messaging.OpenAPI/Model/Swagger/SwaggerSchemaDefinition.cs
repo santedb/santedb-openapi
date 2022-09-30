@@ -19,15 +19,14 @@
  * Date: 2022-5-30
  */
 using Newtonsoft.Json;
-using System.Xml.Serialization;
-using System.Collections.Generic;
+using SanteDB.Core.Interop.Description;
+using SanteDB.Messaging.Metadata.Composer;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using SanteDB.Messaging.Metadata.Composer;
 using System.Reflection;
-using SanteDB.Core.Model;
-using SanteDB.Core.Interop.Description;
+using System.Xml.Serialization;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
 {
@@ -57,10 +56,14 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             this.Reference = copy.Reference;
             this.Description = copy.Description;
             if (copy.Properties != null)
+            {
                 this.Properties = copy.Properties.ToDictionary(o => o.Key, o => new SwaggerSchemaElement(o.Value));
+            }
 
             if (copy.AllOf != null)
+            {
                 this.AllOf = copy.AllOf.Select(o => new SwaggerSchemaDefinition(o)).ToList();
+            }
 
             this.NetType = copy.NetType;
         }
@@ -81,7 +84,9 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             // XML info
             var xmlType = schemaType.GetCustomAttribute<XmlTypeAttribute>();
             if (xmlType != null)
+            {
                 this.Xml = new SwaggerXmlInfo(xmlType);
+            }
         }
 
         /// <summary>

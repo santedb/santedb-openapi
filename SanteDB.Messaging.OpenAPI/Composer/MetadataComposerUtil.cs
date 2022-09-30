@@ -20,24 +20,19 @@
  */
 using Newtonsoft.Json;
 using SanteDB.Core;
-using SanteDB.Core.Interfaces;
+using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Interop;
+using SanteDB.Core.Services;
+using SanteDB.Messaging.Metadata.Configuration;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
-using SanteDB.Core.Model;
-using SanteDB.Core.Diagnostics;
-using System.Diagnostics.Tracing;
-using SanteDB.Core.Services;
-using SanteDB.Messaging.Metadata.Configuration;
 
 namespace SanteDB.Messaging.Metadata.Composer
 {
@@ -79,7 +74,7 @@ namespace SanteDB.Messaging.Metadata.Composer
         /// <param name="name">The format that the composer creates</param>
         public static IMetadataComposer GetComposer(String name)
         {
-            if(s_composers == null)
+            if (s_composers == null)
             {
                 s_composers = ApplicationServiceContext.Current.GetService<IServiceManager>().GetAllTypes()
                     .Where(t => typeof(IMetadataComposer).IsAssignableFrom(t) && !t.IsGenericTypeDefinition && !t.IsAbstract && !t.IsInterface)
@@ -89,9 +84,13 @@ namespace SanteDB.Messaging.Metadata.Composer
 
             IMetadataComposer retVal = null;
             if (!s_composers.TryGetValue(name, out retVal))
+            {
                 throw new KeyNotFoundException($"Composer {name} not found");
+            }
             else
+            {
                 return retVal;
+            }
         }
 
         /// <summary>
@@ -106,8 +105,12 @@ namespace SanteDB.Messaging.Metadata.Composer
             {
                 retVal = GetElementDocumentation(type.Assembly, docName, docType.ToString().ToLower());
                 lock (s_documentationCache)
+                {
                     if (!s_documentationCache.ContainsKey(cacheName))
+                    {
                         s_documentationCache.Add(cacheName, retVal);
+                    }
+                }
             }
             return retVal;
         }
@@ -118,7 +121,7 @@ namespace SanteDB.Messaging.Metadata.Composer
         public static string GetElementDocumentation(PropertyInfo property, MetaDataElementType docType = MetaDataElementType.Summary)
         {
             var declType = property.DeclaringType.FullName;
-            if(property.DeclaringType.IsGenericType)
+            if (property.DeclaringType.IsGenericType)
             {
                 declType = declType.Substring(0, declType.IndexOf("["));
             }
@@ -129,8 +132,12 @@ namespace SanteDB.Messaging.Metadata.Composer
             {
                 retVal = GetElementDocumentation(property.DeclaringType.Assembly, docName, docType.ToString().ToLower());
                 lock (s_documentationCache)
+                {
                     if (!s_documentationCache.ContainsKey(cacheName))
+                    {
                         s_documentationCache.Add(cacheName, retVal);
+                    }
+                }
             }
             return retVal;
         }
@@ -151,9 +158,15 @@ namespace SanteDB.Messaging.Metadata.Composer
         {
             String schemaName = type.GetCustomAttribute<XmlTypeAttribute>()?.TypeName;
             if (String.IsNullOrEmpty(schemaName))
+            {
                 schemaName = type.GetCustomAttribute<JsonObjectAttribute>()?.Id;
+            }
+
             if (String.IsNullOrEmpty(schemaName))
+            {
                 schemaName = type.StripNullable().Name;
+            }
+
             return schemaName;
         }
 
@@ -169,8 +182,12 @@ namespace SanteDB.Messaging.Metadata.Composer
             {
                 retVal = GetElementDocumentation(method.DeclaringType.Assembly, docName, $"param[@name='{parameter.Name}']");
                 lock (s_documentationCache)
+                {
                     if (!s_documentationCache.ContainsKey(cacheName))
+                    {
                         s_documentationCache.Add(cacheName, retVal);
+                    }
+                }
             }
             return retVal;
         }
@@ -180,15 +197,19 @@ namespace SanteDB.Messaging.Metadata.Composer
         /// </summary>
         public static string GetElementDocumentation(MethodInfo method, MetaDataElementType docType = MetaDataElementType.Summary)
         {
-            var docName = $"M:{method.DeclaringType.FullName}.{method.Name}({String.Join(",", method.GetParameters().Select(o=>o.ParameterType.FullName))})";
+            var docName = $"M:{method.DeclaringType.FullName}.{method.Name}({String.Join(",", method.GetParameters().Select(o => o.ParameterType.FullName))})";
             var cacheName = $"{docName}@{docType}";
             var retVal = method.GetCustomAttribute<DescriptionAttribute>()?.Description;
             if (String.IsNullOrEmpty(retVal) && !s_documentationCache.TryGetValue(cacheName, out retVal)) // Attempt to load the documentation from disk 
             {
                 retVal = GetElementDocumentation(method.DeclaringType.Assembly, docName, docType.ToString().ToLower());
                 lock (s_documentationCache)
+                {
                     if (!s_documentationCache.ContainsKey(cacheName))
+                    {
                         s_documentationCache.Add(cacheName, retVal);
+                    }
+                }
             }
             return retVal;
 
@@ -202,30 +223,38 @@ namespace SanteDB.Messaging.Metadata.Composer
         {
             XmlDocument documentation = null;
             // Try to get the cached documentation
-            if(!s_documentationFiles.TryGetValue(assembly, out documentation))
+            if (!s_documentationFiles.TryGetValue(assembly, out documentation))
             {
                 var docFile = Path.ChangeExtension(assembly.Location, "xml");
                 if (!File.Exists(docFile))
+                {
                     return null;
+                }
 
                 try
                 {
                     documentation = new XmlDocument();
                     documentation.Load(docFile);
                     lock (s_documentationFiles)
+                    {
                         if (!s_documentationFiles.ContainsKey(assembly))
+                        {
                             s_documentationFiles.Add(assembly, documentation);
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
-                    s_traceSource.TraceEvent(EventLevel.Error,  "Could not load documentation file {0}: {1}", docFile, e);
+                    s_traceSource.TraceEvent(EventLevel.Error, "Could not load documentation file {0}: {1}", docFile, e);
                     throw;
                 }
             }
 
             // Now, get summary
-            lock(documentation)
+            lock (documentation)
+            {
                 return documentation.SelectSingleNode($"/doc/members/member[@name='{docKey}']/{docPath}/text()")?.Value?.Trim();
+            }
         }
 
         /// <summary>
@@ -233,7 +262,7 @@ namespace SanteDB.Messaging.Metadata.Composer
         /// </summary>
         public static ResourceCapabilityType VerbToCapability(string verb, int argl)
         {
-            switch(verb.ToLower())
+            switch (verb.ToLower())
             {
                 case "get":
                     return argl == 0 ? ResourceCapabilityType.Search : ResourceCapabilityType.Get;
@@ -258,7 +287,9 @@ namespace SanteDB.Messaging.Metadata.Composer
             // Look for external services?
             IEnumerable<ServiceEndpointOptions> services = ApplicationServiceContext.Current.GetService<IConfigurationManager>().GetSection<MetadataConfigurationSection>().Services;
             if (services == null || services.Count() == 0)
+            {
                 services = ApplicationServiceContext.Current.GetService<IServiceManager>().GetServices().OfType<IApiEndpointProvider>().Select(o => new ServiceEndpointOptions(o));
+            }
 
             var serviceEndpoint = typeof(ServiceEndpointType).GetFields().FirstOrDefault(o => o.GetCustomAttribute<XmlEnumAttribute>()?.Name == serviceName)?.Name;
             if (!String.IsNullOrEmpty(serviceEndpoint))
@@ -267,7 +298,9 @@ namespace SanteDB.Messaging.Metadata.Composer
                 return services.FirstOrDefault(o => o.ServiceType == serviceEndpointType);
             }
             else
+            {
                 return null;
+            }
         }
     }
 }

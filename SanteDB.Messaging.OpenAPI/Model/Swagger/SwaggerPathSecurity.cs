@@ -44,7 +44,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         /// <summary>
         /// Copy ctor
         /// </summary>
-        public SwaggerPathSecurity(IDictionary<string, List<string>> dictionary) : base(dictionary.ToDictionary(o=>o.Key, o=>new List<string>(o.Value)))
+        public SwaggerPathSecurity(IDictionary<string, List<string>> dictionary) : base(dictionary.ToDictionary(o => o.Key, o => new List<string>(o.Value)))
         {
         }
     }
