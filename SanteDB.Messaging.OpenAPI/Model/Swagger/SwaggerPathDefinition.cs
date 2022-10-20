@@ -93,9 +93,8 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         /// <summary>
         /// Creates a new path definition 
         /// </summary>
-        public SwaggerPathDefinition(MethodInfo behaviorMethod, MethodInfo contractMethod) : this()
+        public SwaggerPathDefinition(MethodInfo behaviorMethod, MethodInfo contractMethod, RestInvokeAttribute operationAtt) : this()
         {
-            var operationAtt = contractMethod.GetCustomAttribute<RestInvokeAttribute>();
             this.Summary = MetadataComposerUtil.GetElementDocumentation(contractMethod, MetaDataElementType.Summary) ?? MetadataComposerUtil.GetElementDocumentation(behaviorMethod, MetaDataElementType.Summary) ?? behaviorMethod.Name;
             this.Description = MetadataComposerUtil.GetElementDocumentation(contractMethod, MetaDataElementType.Remarks) ?? MetadataComposerUtil.GetElementDocumentation(behaviorMethod, MetaDataElementType.Remarks);
             this.Produces.AddRange(contractMethod.GetCustomAttributes<ServiceProducesAttribute>().Select(o => o.MimeType));

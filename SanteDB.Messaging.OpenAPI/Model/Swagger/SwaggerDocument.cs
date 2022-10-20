@@ -22,6 +22,7 @@ using Newtonsoft.Json;
 using RestSrvr;
 using RestSrvr.Attributes;
 using SanteDB.Core;
+using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Interop;
 using SanteDB.Core.Model.Attributes;
 using SanteDB.Core.Model.Interfaces;
@@ -46,11 +47,14 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerDocument
     {
+        Tracer _Tracer;
+
         /// <summary>
         /// Gets the version of the swagger document
         /// </summary>
         public SwaggerDocument()
         {
+            _Tracer = new Tracer(nameof(SwaggerDocument));
             this.Version = "2.0";
             this.Tags = new List<SwaggerTag>();
             this.Definitions = new Dictionary<String, SwaggerSchemaDefinition>();
@@ -185,7 +189,8 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
 
             // Construct the paths
             var operations = service.Contracts.SelectMany(c => c.Type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                    .Select(o => new { Rest = o.GetCustomAttribute<RestInvokeAttribute>(), ContractMethod = o, BehaviorMethod = service.Behavior.Type.GetMethod(o.Name, o.GetParameters().Select(p => p.ParameterType).ToArray()) }))
+                    .SelectMany(m => m.GetCustomAttributes<RestInvokeAttribute>().Select(attr => new { Method = m, Attribute = attr }))
+                    .Select(o => new { Rest = o.Attribute, ContractMethod = o.Method, BehaviorMethod = service.Behavior.Type.GetMethod(o.Method.Name, o.Method.GetParameters().Select(p => p.ParameterType).ToArray()) }))
                     .Where(o => o.Rest != null);
 
             // Create tags
@@ -202,7 +207,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 foreach (var val in operation)
                 {
                     // Process operations
-                    var pathDefinition = new SwaggerPathDefinition(val.BehaviorMethod, val.ContractMethod);
+                    var pathDefinition = new SwaggerPathDefinition(val.BehaviorMethod, val.ContractMethod, val.Rest);
                     path.Add(val.Rest.Method.ToLower(), pathDefinition);
                     if (pathDefinition.Consumes.Count == 0)
                     {
@@ -233,6 +238,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 {
                     foreach (var resource in resourceTypes)
                     {
+
                         var resourcePath = operation.Key.Replace("{resourceType}", resource.Key);
                         if (this.Paths.ContainsKey(resourcePath) ||
                             resourcePath.Contains("history") && !typeof(IVersionedData).IsAssignableFrom(resource.Value))
@@ -366,8 +372,19 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                             subPath.Remove(nv);
                         }
 
+#if DEBUG
+                        //Check for a condition that previously caused an exception.
+                        if ((resourcePath.Contains("{childResourceType}") || resourcePath.Contains("{operationName}")) && null == resourceOptions?.ChildResources)
+                        {
+                            _Tracer.TraceUntestedWarning();
+                            _Tracer.TraceWarning("Resource path contains child resource type but resourceOptions.ChildResources is null. This would previously have produced an exception and may indicate a configuration issue. This message will not appear in a release build.");
+                        }
+
+#endif
+
+
                         // Child resources? we want to multiply them if so
-                        if ((resourcePath.Contains("{childResourceType}") || resourcePath.Contains("{operationName}")) && resourceOptions.ChildResources.Count > 0)
+                        if ((resourcePath.Contains("{childResourceType}") || resourcePath.Contains("{operationName}")) && resourceOptions?.ChildResources?.Count > 0)
                         {
                             foreach (var sp in subPath)
                             {

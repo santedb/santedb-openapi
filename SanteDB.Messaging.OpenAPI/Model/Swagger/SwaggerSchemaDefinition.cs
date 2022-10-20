@@ -78,8 +78,10 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             this.Type = SwaggerSchemaElementType.@object;
 
             this.Properties = schemaType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(p => p.GetCustomAttributes<XmlElementAttribute>().Any() || p.GetCustomAttribute<JsonPropertyAttribute>() != null)
-                .ToDictionary(o => o.GetSerializationName(), o => new SwaggerSchemaElement(o));
+                .Where(p => p.GetCustomAttributes<XmlElementAttribute>()?.Any() == true || p.GetCustomAttribute<JsonPropertyAttribute>() != null)
+                .Select(p2 => new {Name = p2.GetSerializationName(), Value = p2})
+                .Where(p3 => p3.Name != null)
+                .ToDictionary(o => o.Name, o => new SwaggerSchemaElement(o.Value));
 
             // XML info
             var xmlType = schemaType.GetCustomAttribute<XmlTypeAttribute>();
