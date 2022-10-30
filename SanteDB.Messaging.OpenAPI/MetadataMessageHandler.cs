@@ -35,7 +35,7 @@ namespace SanteDB.Messaging.Metadata
     /// Represents the daemon service that starts/stops the OpenApi information file
     /// </summary>
     [Description("Allows SanteDB iCDR/dCDR to expose service metadata using OpenAPI/Swagger 2.0")]
-    [ApiServiceProvider("OpenAPI Metadata Exchange", typeof(MetadataServiceBehavior), configurationType: typeof(MetadataConfigurationSection))]
+    [ApiServiceProvider("OpenAPI Metadata Exchange", typeof(MetadataServiceBehavior), ServiceEndpointType.Metadata, configurationType: typeof(MetadataConfigurationSection))]
     public class MetadataMessageHandler : IDaemonService, IApiEndpointProvider
     {
         // Trace source for logs

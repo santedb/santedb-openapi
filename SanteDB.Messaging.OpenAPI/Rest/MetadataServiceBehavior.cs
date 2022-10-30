@@ -42,7 +42,7 @@ namespace SanteDB.Messaging.Metadata.Rest
     /// Metadata Exchange
     /// </summary>
     /// <remarks>An implementation of a metadata exchange endpoint</remarks>
-    [ServiceBehavior(Name = "META")]
+    [ServiceBehavior(Name = MetadataMessageHandler.ConfigurationName)]
     public class MetadataServiceBehavior : IMetadataServiceContract
     {
         /// <summary>
