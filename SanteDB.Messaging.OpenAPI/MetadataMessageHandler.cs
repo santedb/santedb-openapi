@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2021, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2022, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,22 +16,18 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-5
+ * Date: 2022-5-30
  */
-using SanteDB.Core.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using RestSrvr;
-using SanteDB.Core.Interop;
 using SanteDB.Core;
+using SanteDB.Core.Diagnostics;
+using SanteDB.Core.Interop;
+using SanteDB.Core.Services;
 using SanteDB.Messaging.Metadata.Configuration;
 using SanteDB.Messaging.Metadata.Rest;
-using System.Diagnostics;
-using SanteDB.Core.Diagnostics;
+using System;
 using System.ComponentModel;
+using System.Linq;
 
 namespace SanteDB.Messaging.Metadata
 {
@@ -39,12 +35,11 @@ namespace SanteDB.Messaging.Metadata
     /// Represents the daemon service that starts/stops the OpenApi information file
     /// </summary>
     [Description("Allows SanteDB iCDR/dCDR to expose service metadata using OpenAPI/Swagger 2.0")]
-    [ApiServiceProvider("OpenAPI Metadata Exchange", typeof(MetadataServiceBehavior), configurationType: typeof(MetadataConfigurationSection))]
+    [ApiServiceProvider("OpenAPI Metadata Exchange", typeof(MetadataServiceBehavior), ServiceEndpointType.Metadata, Configuration = typeof(MetadataConfigurationSection))]
     public class MetadataMessageHandler : IDaemonService, IApiEndpointProvider
     {
-
         // Trace source for logs
-        private Tracer m_traceSource = new Tracer(MetadataConstants.TraceSourceName);
+        private readonly Tracer m_traceSource = new Tracer(MetadataConstants.TraceSourceName);
 
         /// <summary>
         /// Represents a rest service
@@ -82,6 +77,11 @@ namespace SanteDB.Messaging.Metadata
         public ServiceEndpointCapabilities Capabilities => (ServiceEndpointCapabilities)ApplicationServiceContext.Current.GetService<IRestServiceFactory>().GetServiceCapabilities(this.m_webHost);
 
         /// <summary>
+        /// Configuration service name
+        /// </summary>
+        public const string ConfigurationName = "META";
+
+        /// <summary>
         /// Default ctor
         /// </summary>
         public MetadataMessageHandler()
@@ -92,14 +92,17 @@ namespace SanteDB.Messaging.Metadata
         /// Fired when the service is starting
         /// </summary>
         public event EventHandler Starting;
+
         /// <summary>
         /// Fired when the service has started
         /// </summary>
         public event EventHandler Started;
+
         /// <summary>
         /// Fired when the service is stopping
         /// </summary>
         public event EventHandler Stopping;
+
         /// <summary>
         /// Fired when the service has stopped
         /// </summary>
@@ -112,11 +115,13 @@ namespace SanteDB.Messaging.Metadata
         {
             this.Starting?.Invoke(this, EventArgs.Empty);
 
-            this.m_webHost = ApplicationServiceContext.Current.GetService<IRestServiceFactory>().CreateService(typeof(MetadataServiceBehavior));
+            this.m_webHost = ApplicationServiceContext.Current.GetService<IRestServiceFactory>().CreateService(ConfigurationName);
 
             // Add service behaviors
             foreach (ServiceEndpoint endpoint in this.m_webHost.Endpoints)
+            {
                 this.m_traceSource.TraceInfo("Starting MetadataExchange on {0}...", endpoint.Description.ListenUri);
+            }
 
             // Start the webhost
             this.m_webHost.Start();

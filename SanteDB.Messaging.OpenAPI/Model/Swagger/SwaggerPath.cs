@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2021, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2022, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,16 +16,15 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-5
+ * Date: 2022-5-30
  */
 using Newtonsoft.Json;
 using SanteDB.Core.Diagnostics;
 using SanteDB.Core.Interop.Description;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
 {
@@ -33,6 +32,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// Represents a swagger path
     /// </summary>
     [JsonDictionary(nameof(SwaggerPath))]
+    [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerPath : Dictionary<String, SwaggerPathDefinition>
     {
 
@@ -47,7 +47,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         /// <summary>
         /// Create a copied swagger path
         /// </summary>
-        public SwaggerPath(IDictionary<String, SwaggerPathDefinition> copy) : base(copy.ToDictionary(o=>o.Key, o=>new SwaggerPathDefinition(o.Value)))
+        public SwaggerPath(IDictionary<String, SwaggerPathDefinition> copy) : base(copy.ToDictionary(o => o.Key, o => new SwaggerPathDefinition(o.Value)))
         {
 
         }

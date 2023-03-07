@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2021, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2022, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,19 +16,16 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-5
+ * Date: 2022-5-30
  */
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Xml.Serialization;
 using Newtonsoft.Json;
 using RestSrvr.Attributes;
 using SanteDB.Core.Interop.Description;
-using SanteDB.Core.Model;
-using SanteDB.Core.Model.Attributes;
 using SanteDB.Messaging.Metadata.Composer;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
+using System.Xml.Serialization;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
 {
@@ -41,11 +38,11 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         /// <summary>
         /// Location is in the body
         /// </summary>
-        body, 
+        body,
         /// <summary>
         /// Location is in the path
         /// </summary>
-        path, 
+        path,
         /// <summary>
         /// Location is in the query
         /// </summary>
@@ -55,10 +52,11 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// Represents the swagger parameter
     /// </summary>
     [JsonObject(nameof(SwaggerParameter))]
+    [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerParameter : SwaggerSchemaElement
     {
 
-       
+
         /// <summary>
         /// Constructor for serializer
         /// </summary>
@@ -69,13 +67,13 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         /// <summary>
         /// Create a swagger query parameter
         /// </summary>
-        public SwaggerParameter(PropertyInfo queryFilter) 
+        public SwaggerParameter(PropertyInfo queryFilter)
         {
 
             this.Name = queryFilter.GetSerializationName() ?? queryFilter.GetCustomAttribute<Core.Model.Attributes.QueryParameterAttribute>()?.ParameterName;
             this.Description = MetadataComposerUtil.GetElementDocumentation(queryFilter);
             this.Location = SwaggerParameterLocation.query;
-            
+
             SwaggerSchemaElementType type = SwaggerSchemaElementType.@string;
             if (queryFilter.PropertyType.StripNullable().IsEnum)
             {
@@ -83,10 +81,13 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 this.Type = SwaggerSchemaElementType.@string;
             }
             else if (!m_typeMap.TryGetValue(queryFilter.PropertyType, out type))
+            {
                 this.Type = SwaggerSchemaElementType.@string;
+            }
             else
+            {
                 this.Type = type;
-
+            }
         }
 
         /// <summary>
@@ -101,15 +102,17 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         /// <summary>
         /// Generate parameter from metadata
         /// </summary>
-        public SwaggerParameter(OperationParameterDescription description) 
+        public SwaggerParameter(OperationParameterDescription description)
         {
             this.Name = description.Name;
             this.Location = description.Location == OperationParameterLocation.Body ? SwaggerParameterLocation.body :
-                description.Location == OperationParameterLocation.Path ? SwaggerParameterLocation.path : 
+                description.Location == OperationParameterLocation.Path ? SwaggerParameterLocation.path :
                 SwaggerParameterLocation.query;
 
             if (description.Type != typeof(ResourceDescription))
+            {
                 this.Type = m_typeMap[description.Type];
+            }
             else
             {
                 this.Type = SwaggerSchemaElementType.@object;
@@ -141,7 +144,9 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 };
             }
             else
+            {
                 this.Type = type;
+            }
         }
 
         /// <summary>

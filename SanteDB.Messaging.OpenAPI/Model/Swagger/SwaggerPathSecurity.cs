@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2021, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2022, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,10 +16,11 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-5
+ * Date: 2022-5-30
  */
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
@@ -28,6 +29,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// Represents a single instance of security data on a path
     /// </summary>
     [JsonDictionary(nameof(SwaggerPathSecurity))]
+    [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerPathSecurity : Dictionary<string, List<string>>
     {
 
@@ -42,7 +44,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         /// <summary>
         /// Copy ctor
         /// </summary>
-        public SwaggerPathSecurity(IDictionary<string, List<string>> dictionary) : base(dictionary.ToDictionary(o=>o.Key, o=>new List<string>(o.Value)))
+        public SwaggerPathSecurity(IDictionary<string, List<string>> dictionary) : base(dictionary.ToDictionary(o => o.Key, o => new List<string>(o.Value)))
         {
         }
     }

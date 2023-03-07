@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2021, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2022, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,31 +16,25 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-5
+ * Date: 2022-5-30
  */
+using RestSrvr;
+using RestSrvr.Attributes;
+using SanteDB.Core;
+using SanteDB.Core.Diagnostics;
+using SanteDB.Core.Http;
+using SanteDB.Core.Interop;
+using SanteDB.Core.Services;
+using SanteDB.Messaging.Metadata.Composer;
+using SanteDB.Messaging.Metadata.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
-using RestSrvr;
-using RestSrvr.Attributes;
-using RestSrvr.Exceptions;
-using SanteDB.Core;
-using SanteDB.Core.Diagnostics;
-using SanteDB.Core.Http;
-using SanteDB.Core.Interfaces;
-using SanteDB.Core.Interop;
-using SanteDB.Core.Services;
-using SanteDB.Messaging.Metadata.Composer;
-using SanteDB.Messaging.Metadata.Configuration;
-using SanteDB.Messaging.Metadata.Model.Swagger;
-using SanteDB.Rest.Common.Fault;
 
 namespace SanteDB.Messaging.Metadata.Rest
 {
@@ -48,14 +42,13 @@ namespace SanteDB.Messaging.Metadata.Rest
     /// Metadata Exchange
     /// </summary>
     /// <remarks>An implementation of a metadata exchange endpoint</remarks>
-    [ServiceBehavior(Name = "META")]
+    [ServiceBehavior(Name = MetadataMessageHandler.ConfigurationName)]
     public class MetadataServiceBehavior : IMetadataServiceContract
     {
-
         /// <summary>
         /// Gets the trace source
         /// </summary>
-        private Tracer m_traceSource = new Tracer(MetadataConstants.TraceSourceName);
+        private readonly Tracer m_traceSource = new Tracer(MetadataConstants.TraceSourceName);
 
         /// <summary>
         /// Get the swagger documentation
@@ -69,11 +62,11 @@ namespace SanteDB.Messaging.Metadata.Rest
             }
             catch (Exception e)
             {
-                this.m_traceSource.TraceEvent(EventLevel.Error,  "Could not get documentation due to exception: {0}", e);
+                this.m_traceSource.TraceEvent(EventLevel.Error, "Could not get documentation due to exception: {0}", e);
                 throw new InvalidOperationException("Error constructing OpenAPI swagger.json file", e);
             }
         }
-         
+
         /// <summary>
         /// Get the YAML documentation
         /// </summary>
@@ -82,13 +75,16 @@ namespace SanteDB.Messaging.Metadata.Rest
             RestOperationContext.Current.OutgoingResponse.ContentType = "application/json";
             IEnumerable<ServiceEndpointOptions> services = ApplicationServiceContext.Current.GetService<IConfigurationManager>().GetSection<MetadataConfigurationSection>().Services;
             if (services == null || services.Count() == 0)
+            {
                 services = ApplicationServiceContext.Current.GetService<IServiceManager>().GetServices().OfType<IApiEndpointProvider>().Select(o => new ServiceEndpointOptions(o));
+            }
 
             var localPath = RestOperationContext.Current.IncomingRequest.Url.Segments[1];
             // Output YAML
             var sw = new StringBuilder();
             sw.Append("{ urls: [");
-            foreach (var api in services.Where(o=>o.Behavior != null))
+            var apis = services.ToArray().Where(o => o.Behavior != null);
+            foreach (var api in apis)
             {
                 var serviceName = typeof(ServiceEndpointType).GetField(api.ServiceType.ToString()).GetCustomAttribute<XmlEnumAttribute>()?.Name ?? api.ServiceType.ToString();
                 sw.AppendFormat("{{ \"url\": \"{0}\", ", $"/{localPath}{serviceName}/swagger.json");
@@ -97,7 +93,6 @@ namespace SanteDB.Messaging.Metadata.Rest
             sw.Remove(sw.Length - 2, 2);
             sw.Append("] }");
             return new MemoryStream(Encoding.UTF8.GetBytes(sw.ToString()));
-
         }
 
         /// <summary>
@@ -118,7 +113,6 @@ namespace SanteDB.Messaging.Metadata.Rest
                     ? content.Substring(0, content.IndexOf("?", StringComparison.Ordinal))
                     : content;
 
-
                 var contentPath = $"SanteDB.Messaging.Metadata.Docs.{filename.Replace("/", ".")}";
 
                 if (!typeof(MetadataServiceBehavior).Assembly.GetManifestResourceNames().Contains(contentPath))
@@ -128,8 +122,7 @@ namespace SanteDB.Messaging.Metadata.Rest
                 }
                 else
                 {
-
-                    RestOperationContext.Current.OutgoingResponse.StatusCode = 200; /// HttpStatusCode.OK;
+                    RestOperationContext.Current.OutgoingResponse.StatusCode = 200; // HttpStatusCode.OK;
                     //RestOperationContext.Current.OutgoingResponse.ContentLength = new FileInfo(contentPath).Length;
                     RestOperationContext.Current.OutgoingResponse.ContentType = DefaultContentTypeMapper.GetContentType(contentPath);
                     return typeof(MetadataServiceBehavior).Assembly.GetManifestResourceStream(contentPath);
@@ -139,7 +132,7 @@ namespace SanteDB.Messaging.Metadata.Rest
             {
                 RestOperationContext.Current.OutgoingResponse.StatusCode = 500;
 
-                this.m_traceSource.TraceEvent(EventLevel.Error,  e.ToString());
+                this.m_traceSource.TraceEvent(EventLevel.Error, e.ToString());
                 return null;
             }
         }

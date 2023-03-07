@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2021, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2022, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,17 +16,17 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2021-8-5
+ * Date: 2022-5-30
  */
 using Newtonsoft.Json;
-using System.Xml.Serialization;
-using System.Collections.Generic;
-using System;
-using System.Linq;
-using SanteDB.Messaging.Metadata.Composer;
-using System.Reflection;
-using SanteDB.Core.Model;
 using SanteDB.Core.Interop.Description;
+using SanteDB.Messaging.Metadata.Composer;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
+using System.Xml.Serialization;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
 {
@@ -34,6 +34,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// Represents a swagger schema definition
     /// </summary>
     [JsonObject(nameof(SwaggerSchemaDefinition))]
+    [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerSchemaDefinition
     {
 
@@ -55,10 +56,14 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             this.Reference = copy.Reference;
             this.Description = copy.Description;
             if (copy.Properties != null)
+            {
                 this.Properties = copy.Properties.ToDictionary(o => o.Key, o => new SwaggerSchemaElement(o.Value));
+            }
 
             if (copy.AllOf != null)
+            {
                 this.AllOf = copy.AllOf.Select(o => new SwaggerSchemaDefinition(o)).ToList();
+            }
 
             this.NetType = copy.NetType;
         }
@@ -73,13 +78,17 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
             this.Type = SwaggerSchemaElementType.@object;
 
             this.Properties = schemaType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(p => p.GetCustomAttributes<XmlElementAttribute>().Any() || p.GetCustomAttribute<JsonPropertyAttribute>() != null)
-                .ToDictionary(o => o.GetSerializationName(), o => new SwaggerSchemaElement(o));
+                .Where(p => p.GetCustomAttributes<XmlElementAttribute>()?.Any() == true || p.GetCustomAttribute<JsonPropertyAttribute>() != null)
+                .Select(p2 => new {Name = p2.GetSerializationName(), Value = p2})
+                .Where(p3 => p3.Name != null)
+                .ToDictionary(o => o.Name, o => new SwaggerSchemaElement(o.Value));
 
             // XML info
             var xmlType = schemaType.GetCustomAttribute<XmlTypeAttribute>();
             if (xmlType != null)
+            {
                 this.Xml = new SwaggerXmlInfo(xmlType);
+            }
         }
 
         /// <summary>
