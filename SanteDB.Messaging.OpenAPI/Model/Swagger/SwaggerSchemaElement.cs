@@ -37,12 +37,33 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// </summary>
     public enum SwaggerSchemaElementFormat
     {
+        /// <summary>
+        /// Type UUID
+        /// </summary>
         uuid,
+        /// <summary>
+        /// Tyoe DATE
+        /// </summary>
         date,
+        /// <summary>
+        /// Type Float
+        /// </summary>
         @float,
+        /// <summary>
+        /// Type double
+        /// </summary>
         @double,
+        /// <summary>
+        /// Type int32
+        /// </summary>
         @int32,
+        /// <summary>
+        /// Type int64
+        /// </summary>
         @int64,
+        /// <summary>
+        /// Type byte
+        /// </summary>
         @byte
     }
 

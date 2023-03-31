@@ -24,6 +24,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace SanteDB.Messaging.Metadata.Model.Swagger
 {
+    /// <summary>
+    /// Represents a serialization class for swagger service information
+    /// </summary>
     [JsonObject(nameof(SwaggerServiceInfo))]
     [ExcludeFromCodeCoverage] // Serialization class
     public class SwaggerServiceInfo

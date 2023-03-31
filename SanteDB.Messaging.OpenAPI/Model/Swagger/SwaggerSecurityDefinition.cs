@@ -31,7 +31,13 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// </summary>
     public enum SwaggerSecurityType
     {
+        /// <summary>
+        /// The security uses HTTP BASIC
+        /// </summary>
         basic,
+        /// <summary>
+        /// The security is OAUTH
+        /// </summary>
         oauth2
     }
 
@@ -40,9 +46,21 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
     /// </summary>
     public enum SwaggerSecurityFlow
     {
+        /// <summary>
+        /// The security flow is PASSWORD grant
+        /// </summary>
         password,
+        /// <summary>
+        /// The security flow permitted is client_Credentials
+        /// </summary>
         client_credentials,
+        /// <summary>
+        /// The security flow permitted is authorization code
+        /// </summary>
         authorization_code,
+        /// <summary>
+        /// The security flow permitted is refresh
+        /// </summary>
         refresh
     }
 

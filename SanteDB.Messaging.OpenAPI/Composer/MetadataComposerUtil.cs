@@ -42,8 +42,17 @@ namespace SanteDB.Messaging.Metadata.Composer
     /// </summary>
     public enum MetaDataElementType
     {
+        /// <summary>
+        /// The metadata is a summary of a method or property
+        /// </summary>
         Summary,
+        /// <summary>
+        /// The metadata is a remark on a property
+        /// </summary>
         Remarks,
+        /// <summary>
+        /// The metadata is an example
+        /// </summary>
         Example
     }
 
