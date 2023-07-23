@@ -394,6 +394,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                             // Correct for child resources - rewriting the schema and opts
                             foreach (var cp in resourceOptions.ChildResources)
                             {
+                                
                                 // Bound to
                                 if (resourcePath.Contains("{id}") && !cp.Scope.HasFlag(ChildObjectScopeBinding.Instance) ||
                                     !resourcePath.Contains("{id}") && !cp.Scope.HasFlag(ChildObjectScopeBinding.Class) ||
@@ -409,13 +410,14 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                     var childCaps = cp.Capabilities.FirstOrDefault(c => c.Capability == MetadataComposerUtil.VerbToCapability(v.Key, v.Value.Parameters.Count));
                                     if (childCaps != null)
                                     {
-                                        newPath.Add(v.Key, v.Value);
+                                        newPath.Add(v.Key, new SwaggerPathDefinition(v.Value));
                                     }
                                 }
 
                                 this.Paths.Add(resourcePath.Replace("{childResourceType}", cp.ResourceName).Replace("{operationName}", cp.ResourceName), newPath);
                                 foreach (var sp in newPath)
                                 {
+                                    
                                     // Replace the response if necessary
                                     var resourceSchemaRef = new SwaggerSchemaDefinition()
                                     {
