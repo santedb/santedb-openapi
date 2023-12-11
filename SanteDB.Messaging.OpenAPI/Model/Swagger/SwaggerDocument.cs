@@ -30,6 +30,7 @@ using SanteDB.Core.Model.Security;
 using SanteDB.Core.Security;
 using SanteDB.Core.Services;
 using SanteDB.Messaging.Metadata.Composer;
+using SanteDB.Rest.Common;
 using SanteDB.Rest.Common.Configuration;
 using System;
 using System.Collections.Generic;
@@ -169,6 +170,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         private void InitializeViaReflection(ServiceEndpointOptions service)
         {
             // Is there an options() method that can be called?
+            var resourceHandlerTool = new ResourceHandlerTool(service.Contracts.First().Type);
             List<KeyValuePair<String, Type>> resourceTypes = null;
             var optionsMethod = service.Behavior.Type.GetRuntimeMethod("Options", Type.EmptyTypes);
             ServiceOptions serviceOptions = null;
@@ -288,6 +290,22 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                     .Where(o => o.GetCustomAttributes<XmlElementAttribute>().Any() || o.GetCustomAttribute<QueryParameterAttribute>() != null)
                                     .Select(o => new SwaggerParameter(o))
                                   );
+
+                                // Get the resource handler type and its own search parameters
+                                var resourceHandlerType = resourceHandlerTool.GetResourceHandler(resourceOptions.ResourceType).First();
+                                var customUrlParameters = resourceHandlerType.GetType().GetMethod(nameof(IApiResourceHandler.Query)).GetCustomAttributes<UrlParameterAttribute>();
+                                if(customUrlParameters.Any())
+                                {
+                                    v.Value.Parameters.AddRange(customUrlParameters.Select(o => new SwaggerParameter()
+                                    {
+                                        Description = o.Description,
+                                        Name = o.Name,
+                                        Location = SwaggerParameterLocation.query,
+                                        Type = SwaggerSchemaElement.m_typeMap[o.Type.StripNullable()],
+                                        Format = SwaggerSchemaElement.m_formatMap[o.Type.StripNullable()],
+                                        Required = o.Required
+                                    }));
+                                }
 
                                 //v.Value.Parameters.AddRange(new SwaggerParameter[]
                                 //{
