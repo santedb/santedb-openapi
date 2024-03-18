@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2021 - 2023, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
+ * Copyright (C) 2021 - 2024, SanteSuite Inc. and the SanteSuite Contributors (See NOTICE.md for full copyright notices)
  * Copyright (C) 2019 - 2021, Fyfe Software Inc. and the SanteSuite Contributors
  * Portions Copyright (C) 2015-2018 Mohawk College of Applied Arts and Technology
  * 
@@ -16,7 +16,7 @@
  * the License.
  * 
  * User: fyfej
- * Date: 2023-5-19
+ * Date: 2023-6-21
  */
 using Newtonsoft.Json;
 using RestSrvr;
@@ -294,7 +294,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                 // Get the resource handler type and its own search parameters
                                 var resourceHandlerType = resourceHandlerTool.GetResourceHandler(resourceOptions.ResourceType).First();
                                 var customUrlParameters = resourceHandlerType.GetType().GetMethod(nameof(IApiResourceHandler.Query)).GetCustomAttributes<UrlParameterAttribute>();
-                                if(customUrlParameters.Any())
+                                if (customUrlParameters.Any())
                                 {
                                     v.Value.Parameters.AddRange(customUrlParameters.Select(o => new SwaggerParameter()
                                     {
@@ -412,7 +412,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                             // Correct for child resources - rewriting the schema and opts
                             foreach (var cp in resourceOptions.ChildResources)
                             {
-                                
+
                                 // Bound to
                                 if (resourcePath.Contains("{id}") && !cp.Scope.HasFlag(ChildObjectScopeBinding.Instance) ||
                                     !resourcePath.Contains("{id}") && !cp.Scope.HasFlag(ChildObjectScopeBinding.Class) ||
@@ -435,7 +435,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                 this.Paths.Add(resourcePath.Replace("{childResourceType}", cp.ResourceName).Replace("{operationName}", cp.ResourceName), newPath);
                                 foreach (var sp in newPath)
                                 {
-                                    
+
                                     // Replace the response if necessary
                                     var resourceSchemaRef = new SwaggerSchemaDefinition()
                                     {
