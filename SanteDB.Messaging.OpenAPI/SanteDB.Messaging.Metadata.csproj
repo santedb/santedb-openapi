@@ -117,7 +117,4 @@
       <Link>SanteDB.licenseheader</Link>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\santedb-hl7\SanteDB.Messaging.HL7\SanteDB.Messaging.HL7.csproj" />
-  </ItemGroup>
 </Project>
