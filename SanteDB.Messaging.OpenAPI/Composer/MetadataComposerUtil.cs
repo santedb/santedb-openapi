@@ -27,6 +27,7 @@ using SanteDB.Messaging.Metadata.Configuration;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
@@ -59,6 +60,7 @@ namespace SanteDB.Messaging.Metadata.Composer
     /// <summary>
     /// Utility for managing documentation composer
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public static class MetadataComposerUtil
     {
         /// <summary>

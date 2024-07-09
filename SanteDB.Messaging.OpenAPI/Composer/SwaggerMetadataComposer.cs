@@ -21,12 +21,14 @@
 using SanteDB.Messaging.Metadata.Model.Swagger;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SanteDB.Messaging.Metadata.Composer
 {
     /// <summary>
     /// Represents a swagger 2.0 documentation composer
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class SwaggerMetadataComposer : IMetadataComposer
     {
 

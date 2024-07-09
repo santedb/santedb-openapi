@@ -27,6 +27,7 @@ using SanteDB.Messaging.Metadata.Configuration;
 using SanteDB.Messaging.Metadata.Rest;
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace SanteDB.Messaging.Metadata
@@ -36,6 +37,7 @@ namespace SanteDB.Messaging.Metadata
     /// </summary>
     [Description("Allows SanteDB iCDR/dCDR to expose service metadata using OpenAPI/Swagger 2.0")]
     [ApiServiceProvider("OpenAPI Metadata Exchange", typeof(MetadataServiceBehavior), ServiceEndpointType.Metadata, Configuration = typeof(MetadataConfigurationSection))]
+    [ExcludeFromCodeCoverage]
     public class MetadataMessageHandler : IDaemonService, IApiEndpointProvider
     {
         // Trace source for logs

@@ -23,6 +23,7 @@ using SanteDB.Core.Configuration;
 using SanteDB.Core.Interop;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml.Serialization;
 
 namespace SanteDB.Messaging.Metadata.Configuration
@@ -32,6 +33,7 @@ namespace SanteDB.Messaging.Metadata.Configuration
     /// </summary>
     [XmlType(nameof(MetadataConfigurationSection), Namespace = "http://santedb.org/configuration")]
     [JsonObject(nameof(MetadataConfigurationSection))]
+    [ExcludeFromCodeCoverage]
     public class MetadataConfigurationSection : IConfigurationSection
     {
         /// <summary>
