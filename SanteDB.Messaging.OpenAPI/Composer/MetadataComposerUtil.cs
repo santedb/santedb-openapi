@@ -14,9 +14,6 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
  * License for the specific language governing permissions and limitations under 
  * the License.
- * 
- * User: fyfej
- * Date: 2023-6-21
  */
 using Newtonsoft.Json;
 using SanteDB.Core;
@@ -27,6 +24,7 @@ using SanteDB.Messaging.Metadata.Configuration;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
@@ -59,6 +57,7 @@ namespace SanteDB.Messaging.Metadata.Composer
     /// <summary>
     /// Utility for managing documentation composer
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public static class MetadataComposerUtil
     {
         /// <summary>

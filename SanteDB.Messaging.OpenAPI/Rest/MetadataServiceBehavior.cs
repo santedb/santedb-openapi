@@ -14,9 +14,6 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
  * License for the specific language governing permissions and limitations under 
  * the License.
- * 
- * User: fyfej
- * Date: 2023-6-21
  */
 using RestSrvr;
 using RestSrvr.Attributes;
@@ -29,6 +26,7 @@ using SanteDB.Messaging.Metadata.Composer;
 using SanteDB.Messaging.Metadata.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
@@ -43,6 +41,7 @@ namespace SanteDB.Messaging.Metadata.Rest
     /// </summary>
     /// <remarks>An implementation of a metadata exchange endpoint</remarks>
     [ServiceBehavior(Name = MetadataMessageHandler.ConfigurationName)]
+    [ExcludeFromCodeCoverage]
     public class MetadataServiceBehavior : IMetadataServiceContract
     {
         /// <summary>

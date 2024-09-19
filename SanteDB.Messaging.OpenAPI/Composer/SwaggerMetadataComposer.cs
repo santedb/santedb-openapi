@@ -14,19 +14,18 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
  * License for the specific language governing permissions and limitations under 
  * the License.
- * 
- * User: fyfej
- * Date: 2023-6-21
  */
 using SanteDB.Messaging.Metadata.Model.Swagger;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SanteDB.Messaging.Metadata.Composer
 {
     /// <summary>
     /// Represents a swagger 2.0 documentation composer
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class SwaggerMetadataComposer : IMetadataComposer
     {
 

@@ -14,9 +14,6 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the 
  * License for the specific language governing permissions and limitations under 
  * the License.
- * 
- * User: fyfej
- * Date: 2023-6-21
  */
 using RestSrvr;
 using SanteDB.Core;
@@ -27,6 +24,7 @@ using SanteDB.Messaging.Metadata.Configuration;
 using SanteDB.Messaging.Metadata.Rest;
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace SanteDB.Messaging.Metadata
@@ -36,6 +34,7 @@ namespace SanteDB.Messaging.Metadata
     /// </summary>
     [Description("Allows SanteDB iCDR/dCDR to expose service metadata using OpenAPI/Swagger 2.0")]
     [ApiServiceProvider("OpenAPI Metadata Exchange", typeof(MetadataServiceBehavior), ServiceEndpointType.Metadata, Configuration = typeof(MetadataConfigurationSection))]
+    [ExcludeFromCodeCoverage]
     public class MetadataMessageHandler : IDaemonService, IApiEndpointProvider
     {
         // Trace source for logs
