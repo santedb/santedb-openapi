@@ -81,7 +81,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 this.Security = new List<SwaggerPathSecurity>() {
                     new SwaggerPathSecurity()
                         {
-                            { "oauth_user", new List<string>() { PermissionPolicyIdentifiers.Login } }
+                            { "svc_auth", new List<string>() { PermissionPolicyIdentifiers.Login } }
                         }
                 };
             }
@@ -114,7 +114,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                 {
                         new SwaggerPathSecurity()
                         {
-                            { "oauth_user", demands.Select(o=>o.PolicyId).ToList() }
+                            { "svc_auth", demands.Select(o=>o.PolicyId).ToList() }
                         }
                 };
             }

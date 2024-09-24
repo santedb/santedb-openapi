@@ -103,7 +103,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
 
                     this.SecurityDefinitions = new Dictionary<string, SwaggerSecurityDefinition>()
                     {
-                        {  "oauth_user", new SwaggerSecurityDefinition()
+                        {  "svc_auth", new SwaggerSecurityDefinition()
                             {
                                 Flow = SwaggerSecurityFlow.password,
                                 Scopes = ApplicationServiceContext.Current.GetService<IRepositoryService<SecurityPolicy>>()?.Find(o=>o.ObsoletionTime == null).ToDictionary(o=>o.Oid, o=>o.Name),
@@ -113,6 +113,18 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                         }
                     };
                 }
+            }
+            else if(serviceCaps.HasFlag(ServiceEndpointCapabilities.BasicAuth))
+            {
+                this.SecurityDefinitions = new Dictionary<string, SwaggerSecurityDefinition>()
+                {
+                    {
+                        "svc_auth", new SwaggerSecurityDefinition()
+                        {
+                            Type = SwaggerSecurityType.basic
+                        }
+                    }
+                };
             }
 
             // Provides its own behavior configuration
@@ -274,7 +286,7 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                 {
                                     new SwaggerPathSecurity()
                                     {
-                                        { "oauth_user", resourceCaps.Demand.Distinct().ToList() }
+                                        { "svc_auth", resourceCaps.Demand.Distinct().ToList() }
                                     }
                                 };
                             }
