@@ -301,7 +301,15 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                                   );
 
                                 // Get the resource handler type and its own search parameters
-                                var resourceHandlerType = resourceHandlerTool.GetResourceHandler(resourceOptions.ResourceType).First();
+                                var resourceHandlerType = resourceHandlerTool.GetResourceHandler(resourceOptions.ResourceType).FirstOrDefault();
+
+                                if (null == resourceHandlerType)
+                                {
+                                    _Tracer.TraceInfo($"GetResourceHandler for resource type \"{resourceOptions.ResourceType}\" is null. This is typically due to a missing service declaration in the configuration.");
+
+                                    continue;
+                                }
+
                                 var customUrlParameters = resourceHandlerType.GetType().GetMethod(nameof(IApiResourceHandler.Query)).GetCustomAttributes<UrlParameterAttribute>();
                                 if (customUrlParameters.Any())
                                 {
