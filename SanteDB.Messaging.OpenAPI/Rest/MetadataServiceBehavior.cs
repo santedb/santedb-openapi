@@ -107,7 +107,7 @@ namespace SanteDB.Messaging.Metadata.Rest
                 if (string.IsNullOrWhiteSpace(content))
                 {
                     var requestUrl = RestOperationContext.Current.IncomingRequest.Url;
-                    RestOperationContext.Current.OutgoingResponse.Redirect($"{requestUrl.Scheme}://{requestUrl.Host}:{requestUrl.Port}{requestUrl.AbsolutePath}/index.html");
+                    RestOperationContext.Current.OutgoingResponse.Redirect($"/index.html");
                     return new MemoryStream();
                 }
 
