@@ -115,6 +115,11 @@ namespace SanteDB.Messaging.Metadata
         /// </summary>
         public bool Start()
         {
+            if(ApplicationServiceContext.Current.HostType == SanteDBHostType.Test)
+            {
+                return true;
+            }
+
             this.Starting?.Invoke(this, EventArgs.Empty);
 
             this.m_webHost = ApplicationServiceContext.Current.GetService<IRestServiceFactory>().CreateService(ConfigurationName);
