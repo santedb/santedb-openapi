@@ -108,7 +108,10 @@ namespace SanteDB.Messaging.Metadata.Rest
                 {
                     var localPath = RestOperationContext.Current.IncomingRequest.Url.LocalPath;
                     var requestUrl = RestOperationContext.Current.IncomingRequest.Url;
-                    RestOperationContext.Current.OutgoingResponse.Redirect($"{localPath}/index.html");
+                    if (localPath.EndsWith("/"))
+                        RestOperationContext.Current.OutgoingResponse.Redirect($"{localPath}index.html");
+                    else
+                        RestOperationContext.Current.OutgoingResponse.Redirect($"{localPath}/index.html");
                     return new MemoryStream();
                 }
 
