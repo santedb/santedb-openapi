@@ -106,9 +106,18 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
 
                     this.SecurityDefinitions = new Dictionary<string, SwaggerSecurityDefinition>()
                     {
-                        {  "svc_auth", new SwaggerSecurityDefinition()
+                        {  "svc_auth_password", new SwaggerSecurityDefinition()
                             {
                                 Flow = SwaggerSecurityFlow.password,
+                                Scopes = ApplicationServiceContext.Current.GetService<IRepositoryService<SecurityPolicy>>()?.Find(o=>o.ObsoletionTime == null).ToDictionary(o=>o.Oid, o=>o.Name),
+                                TokenUrl = $"{tokenUrl.ToString().Replace("0.0.0.0", RestOperationContext.Current.IncomingRequest.Url.Host)}/oauth2_token",
+                                Type = SwaggerSecurityType.oauth2
+                            }
+                        },
+                        {
+                            "svc_auth_client", new SwaggerSecurityDefinition()
+                            {
+                                Flow = SwaggerSecurityFlow.application,
                                 Scopes = ApplicationServiceContext.Current.GetService<IRepositoryService<SecurityPolicy>>()?.Find(o=>o.ObsoletionTime == null).ToDictionary(o=>o.Oid, o=>o.Name),
                                 TokenUrl = $"{tokenUrl.ToString().Replace("0.0.0.0", RestOperationContext.Current.IncomingRequest.Url.Host)}/oauth2_token",
                                 Type = SwaggerSecurityType.oauth2
@@ -285,13 +294,12 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
                             // Security?
                             if (this.SecurityDefinitions.Count > 0 && resourceCaps?.Demand.Length > 0)
                             {
-                                v.Value.Security = new List<SwaggerPathSecurity>()
-                                {
+                                v.Value.Security = this.SecurityDefinitions.Select(o => 
                                     new SwaggerPathSecurity()
                                     {
-                                        { "svc_auth", resourceCaps.Demand.Distinct().ToList() }
+                                        { o.Key, resourceCaps.Demand.Distinct().ToList() }
                                     }
-                                };
+                                ).ToList();
                             }
 
                             // Query parameters?

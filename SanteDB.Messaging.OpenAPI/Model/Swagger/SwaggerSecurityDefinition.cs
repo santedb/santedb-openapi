@@ -53,15 +53,15 @@ namespace SanteDB.Messaging.Metadata.Model.Swagger
         /// <summary>
         /// The security flow permitted is client_Credentials
         /// </summary>
-        client_credentials,
+        clientCredentials,
         /// <summary>
         /// The security flow permitted is authorization code
         /// </summary>
-        authorization_code,
+        authorizationCode,
         /// <summary>
-        /// The security flow permitted is refresh
+        /// Specialized swagger UI
         /// </summary>
-        refresh
+        application
     }
 
     /// <summary>
